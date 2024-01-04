@@ -1,0 +1,42 @@
+#allows linux to serve port 443 by redirecting to 8443 internally
+sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8443
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 443 -j REDIRECT --to-ports 8443
+sudo iptables-save
+
+
+[System.Reflection.Assembly]::LoadFrom($NpgsqlPath)
+try
+{
+    $conn = [Npgsql.NpgsqlConnection]::new("Host=localhost;Username=$Env:USERNAME;Integrated Security=true")
+    $conn.Open()
+    $cmd = [Npgsql.NpgsqlCommand]::new("CREATE TABLE data (id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY, value text NOT NULL)", $conn)
+    $cmd.ExecuteNonQuery()
+    $cmd.CommandText = "INSERT INTO data (value) VALUES ('First row'), ('Second row'), ('Third row')"
+    $cmd.ExecuteNonQuery()
+    $cmd.CommandText = "SELECT value FROM data"
+    $reader = $cmd.ExecuteReader()
+    while($reader.Read())
+    {
+        Write-Host $reader.GetString(0)
+    }
+}
+finally
+{
+    if ($null -ne $reader)
+    {
+        $reader.Dispose()
+        $reader = $null
+    }
+    if ($null -ne $cmd)
+    {
+        $cmd.Dispose()
+        $cmd = $null
+    }
+    if ($null -ne $conn)
+    {
+        $conn.Dispose()
+        $conn = $null
+    }
+}
+
+exit

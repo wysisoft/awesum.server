@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\awesum.server.props" />
+</Project>
