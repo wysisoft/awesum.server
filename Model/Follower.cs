@@ -26,4 +26,12 @@ public partial class Follower
     public bool? LeaderRemoved { get; set; }
 
     public Guid? UniqueId { get; set; }
+
+    public bool? Deleted { get; set; }
+
+    public string? FollowerLoginId { get; set; }
+
+    public int? Version { get; set; }
+
+    public int? DatabaseId { get; set; }
 }

@@ -19,5 +19,7 @@ public partial class App
 
     public string? HomePageIcon { get; set; }
 
-    public Guid? UniqueId { get; set; }
+    public bool? Deleted { get; set; }
+
+    public int? Version { get; set; }
 }

@@ -29,9 +29,11 @@ public partial class DatabaseItem
 
     public string? Text { get; set; }
 
-    public int? DatabaseId { get; set; }
+    public bool? Deleted { get; set; }
 
-    public int? AppId { get; set; }
+    public int? Version { get; set; }
 
-    public Guid? UniqueId { get; set; }
+    public string? Loginid { get; set; }
+
+    public string? UniqueId { get; set; }
 }

@@ -1787,11 +1787,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/b/awesum3/awesum.server/awesum.server.csproj",
+      "projectUniqueName": "/home/b/awesum4/awesum.server/awesum.server.csproj",
       "projectName": "awesum.server",
-      "projectPath": "/home/b/awesum3/awesum.server/awesum.server.csproj",
+      "projectPath": "/home/b/awesum4/awesum.server/awesum.server.csproj",
       "packagesPath": "/home/b/.nuget/packages/",
-      "outputPath": "/home/b/awesum3/awesum.server/obj/",
+      "outputPath": "/home/b/awesum4/awesum.server/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/b/.nuget/NuGet/NuGet.Config"
@@ -1872,7 +1872,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/7.0.114/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/7.0.115/RuntimeIdentifierGraph.json"
       }
     }
   }
