@@ -3,6 +3,8 @@
 BEGIN;
 
 
+DROP TABLE IF EXISTS public.apps;
+
 CREATE TABLE IF NOT EXISTS public.apps
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
@@ -12,10 +14,14 @@ CREATE TABLE IF NOT EXISTS public.apps
     name text COLLATE pg_catalog."default",
     "lastModified" timestamp without time zone,
     "homePageIcon" text COLLATE pg_catalog."default",
-    "uniqueId" uuid,
     deleted boolean,
+    version integer,
+    "allowedToInitiateFollows" boolean,
+    "uniqueId" text COLLATE pg_catalog."default",
     CONSTRAINT apps_pkey PRIMARY KEY (id)
 );
+
+DROP TABLE IF EXISTS public."databaseItems";
 
 CREATE TABLE IF NOT EXISTS public."databaseItems"
 (
@@ -31,38 +37,67 @@ CREATE TABLE IF NOT EXISTS public."databaseItems"
     "grouping" integer,
     "lastModified" timestamp without time zone,
     text text COLLATE pg_catalog."default",
+    deleted boolean,
+    version integer,
+    loginid text COLLATE pg_catalog."default",
+    "uniqueId" text COLLATE pg_catalog."default",
     "databaseId" integer,
     "appId" integer,
-    "uniqueId" uuid,
-    deleted boolean,
     CONSTRAINT "databaseItems_pkey" PRIMARY KEY (id)
 );
+
+DROP TABLE IF EXISTS public."databaseTypes";
+
+CREATE TABLE IF NOT EXISTS public."databaseTypes"
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    type text COLLATE pg_catalog."default",
+    "databaseId" integer,
+    "lastModified" timestamp without time zone,
+    version integer,
+    "order" integer,
+    loginid text COLLATE pg_catalog."default",
+    "uniqueId" text COLLATE pg_catalog."default",
+    "databaseGroup" text COLLATE pg_catalog."default",
+    "appId" integer,
+    CONSTRAINT types_pkey PRIMARY KEY (id)
+);
+
+DROP TABLE IF EXISTS public."databaseUnits";
 
 CREATE TABLE IF NOT EXISTS public."databaseUnits"
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    type integer,
     name text COLLATE pg_catalog."default",
     "order" integer,
     "lastModified" timestamp without time zone,
+    deleted boolean,
+    "databaseTypeId" integer,
+    version integer,
+    loginid text COLLATE pg_catalog."default",
+    "uniqueId" text COLLATE pg_catalog."default",
     "databaseId" integer,
     "appId" integer,
-    "uniqueId" uuid,
-    deleted boolean,
     CONSTRAINT "databaseProperties_pkey" PRIMARY KEY (id)
 );
+
+DROP TABLE IF EXISTS public.databases;
 
 CREATE TABLE IF NOT EXISTS public.databases
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    "appId" integer,
     name text COLLATE pg_catalog."default",
-    "default" timestamp without time zone,
     "lastModified" timestamp without time zone,
-    "manualId" text COLLATE pg_catalog."default",
-    "uniqueId" uuid,
-    deleted boolean
+    deleted boolean,
+    version integer,
+    "order" integer,
+    loginid text COLLATE pg_catalog."default",
+    "uniqueId" text COLLATE pg_catalog."default",
+    "groupName" text COLLATE pg_catalog."default",
+    "appId" integer
 );
+
+DROP TABLE IF EXISTS public.followers;
 
 CREATE TABLE IF NOT EXISTS public.followers
 (
@@ -78,6 +113,11 @@ CREATE TABLE IF NOT EXISTS public.followers
     "leaderRemoved" boolean,
     "uniqueId" uuid,
     deleted boolean,
+    "followerLoginId" text COLLATE pg_catalog."default",
+    version integer,
+    "databaseId" integer,
+    "initiatedBy" integer,
+    "followerDatabaseGroup" text COLLATE pg_catalog."default",
     CONSTRAINT followrequests_pkey PRIMARY KEY (id)
 );
 END;
