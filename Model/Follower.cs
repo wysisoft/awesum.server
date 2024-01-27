@@ -34,4 +34,8 @@ public partial class Follower
     public int? Version { get; set; }
 
     public int? DatabaseId { get; set; }
+
+    public int? InitiatedBy { get; set; }
+
+    public string? FollowerDatabaseGroup { get; set; }
 }

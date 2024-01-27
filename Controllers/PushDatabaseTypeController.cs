@@ -21,57 +21,101 @@ public partial class PushDatabaseTypeController : ControllerBase
 
     public PushDatabaseTypeController(ILogger<PushDatabaseTypeController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpPost]
     [RequestSizeLimit(5_242_880)]
     public ActionResult Post(PushDatabaseTypeRequest request)
     {
-        var followers = new List<Follower>();
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
+
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
+
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
+
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
+
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
+
         if (!HttpContext.User.Identity.IsAuthenticated)
         {
             return BadRequest(_localizer["AuthenticationIsRequired"]);
         }
-        var context = new AwesumContext();
+
         string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")
         {
-            var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
             email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
 
-            var foundDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.UniqueId == request.DatabaseType.UniqueId &&
-            o.Loginid == id);
+        var context = new AwesumContext();
+        PushDatabaseTypeResponse response = new PushDatabaseTypeResponse();
+        DatabaseType? foundLeaderDatabaseType = null;
+        Follower? foundFollower = null;
 
-            if (foundDatabaseType == null)
+        if (request.IsLeader)
+        {
+            try
             {
-                context.DatabaseTypes.Add(request.DatabaseType);
-                context.SaveChanges();
+                foundLeaderDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Loginid == id
+                && o.Id == request.DatabaseType.Id);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return BadRequest(_localizer["TooManyLoginDatabaseTypes"]);
+            }
+        }
+        else
+        {
+            foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
+            && o.LeaderAppId == request.DatabaseType.AppId);
+            if (foundFollower is not null)
+            {
+                foundLeaderDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Id == request.DatabaseType.Id);
             }
             else
             {
-                if (request.DatabaseType != null && (foundDatabaseType.LastModified > request.DatabaseType.LastModified ||
-                foundDatabaseType.Version > request.DatabaseType.Version) && !request.Force)
-                {
-                    return BadRequest(_localizer["NotMostRecentVersion"]);
-                }
-
-                //we are clear to force the server to be the same as the client 
-
-                if (request.DatabaseType != null && (foundDatabaseType.LastModified < request.DatabaseType.LastModified ||
-                foundDatabaseType.Version < request.DatabaseType.Version))
-                {
-                    foundDatabaseType.LastModified = request.DatabaseType.LastModified;
-                    foundDatabaseType.Version = request.DatabaseType.Version;
-                    foundDatabaseType.Order = request.DatabaseType.Order;
-                    context.SaveChanges();
-                }
+                return BadRequest(_localizer["CouldNotFindDatabaseTypeAsFollower"]);
             }
         }
 
-        return Ok();
+        if (foundLeaderDatabaseType == null)
+        {
+            return BadRequest(_localizer["DatabaseTypeNotFound"]);
+        }
+
+        if (!request.Force && foundLeaderDatabaseType.LastModified >= request.DatabaseType.LastModified ||
+        foundLeaderDatabaseType.Version >= request.DatabaseType.Version)
+        {
+            response.RequiresForce = true;
+            return Ok(response);
+        }
+
+        if (request.Force || foundLeaderDatabaseType.LastModified < request.DatabaseType.LastModified ||
+        foundLeaderDatabaseType.Version < request.DatabaseType.Version)
+        {
+            context.DatabaseTypes.Update(request.DatabaseType);
+        }
+
+        return Ok(response);
     }
 }

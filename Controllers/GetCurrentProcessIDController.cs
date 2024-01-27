@@ -16,8 +16,8 @@ public class GetCurrentProcessIDController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public  IActionResult Get()
     {
-        return Ok(Process.GetCurrentProcess().Id);
+        return Ok(Environment.ProcessId);
     }
 }

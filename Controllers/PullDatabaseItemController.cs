@@ -21,60 +21,95 @@ public partial class PullDatabaseItemController : ControllerBase
 
     public PullDatabaseItemController(ILogger<PullDatabaseItemController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpGet]
-    public ActionResult Get(PullDatabaseItem request)
+    public ActionResult Get(PullDatabaseItemRequest request)
     {
-        // var followers = new List<Follower>();
-        // if (!HttpContext.User.Identity.IsAuthenticated)
-        // {
-        //     return BadRequest(_localizer["AuthenticationIsRequired"]);
-        // }
-        // var context = new AwesumContext();
-        // string email = "", id = "";
-        // if (HttpContext.User.Identity.AuthenticationType == "Google")
-        // {
-        //     var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
-        //     email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
-        //     id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
 
-        //     var foundDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.UniqueId == request.DatabaseItem.UniqueId &&
-        //     o.Loginid == id);
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
 
-        //     if (foundDatabaseItem == null)
-        //     {
-        //         context.DatabaseItems.Add(request.DatabaseItem);
-        //         context.SaveChanges();
-        //     }
-        //     else
-        //     {
-        //         if (request.DatabaseItem != null && (foundDatabaseItem.LastModified > request.DatabaseItem.LastModified ||
-        //         foundDatabaseItem.Version > request.DatabaseItem.Version) && !request.Force)
-        //         {
-        //             return BadRequest(_localizer["NotMostRecentVersion"]);
-        //         }
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
 
-        //         //we are clear to force the server to be the same as the client 
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
 
-        //         if (request.DatabaseItem != null && (foundDatabaseItem.LastModified < request.DatabaseItem.LastModified ||
-        //         foundDatabaseItem.Version < request.DatabaseItem.Version))
-        //         {
-        //             foundDatabaseItem.LastModified = request.DatabaseItem.LastModified;
-        //             foundDatabaseItem.Version = request.DatabaseItem.Version;
-        //             foundDatabaseItem.Order = request.DatabaseItem.Order;
-        //             foundDatabaseItem.Text= request.DatabaseItem.Text;
-        //             foundDatabaseItem.Letters= request.DatabaseItem.Letters;
-        //             foundDatabaseItem.Image= request.DatabaseItem.Image;
-        //             foundDatabaseItem.Sound= request.DatabaseItem.Sound;
-        //             context.SaveChanges();
-        //         }
-        //     }
-        // }
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
 
-        return Ok();
+        if (!HttpContext.User.Identity.IsAuthenticated)
+        {
+            return BadRequest(_localizer["AuthenticationIsRequired"]);
+        }
+
+        string email = "", id = "";
+        if (HttpContext.User.Identity.AuthenticationType == "Google")
+        {
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
+            email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
+            id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
+
+        var context = new AwesumContext();
+        PullDatabaseItemResponse response = new PullDatabaseItemResponse();
+        DatabaseItem? foundDatabaseItem = null;
+        Follower? foundFollower = null;
+
+        if (request.IsLeader)
+        {
+            try
+            {
+                foundDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.Loginid == id
+            && request.DatabaseItem.Id == o.Id);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return BadRequest(_localizer["TooManyDatabaseItems"]);
+            }
+        }
+        else
+        {
+            //find a follower row that entitles the user to pull this database
+            foundFollower = context.Followers.FirstOrDefault(o =>
+            o.FollowerLoginId == id && o.LeaderAppId == request.AppId &&
+            (o.FollowerDatabaseGroup == "All" || o.DatabaseId == request.DatabaseId));
+            if (foundFollower is not null)
+            {
+                foundDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.Id == request.DatabaseItem.Id);
+            }
+            else
+            {
+                return BadRequest(_localizer["CouldNotFindDatabaseItem"]);
+            }
+        }
+
+        if (foundDatabaseItem == null)
+        {
+            return BadRequest(_localizer["DatabaseItemNotFound"]);
+        }
+
+        if (foundDatabaseItem.LastModified > request.DatabaseItem.LastModified ||
+        foundDatabaseItem.Version > request.DatabaseItem.Version)
+        {
+            response.DatabaseItem = foundDatabaseItem;
+        }
+
+        return Ok(response);
     }
 }

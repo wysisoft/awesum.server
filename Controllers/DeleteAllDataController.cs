@@ -21,29 +21,59 @@ public class DeleteAllDataController : ControllerBase
 
     public DeleteAllDataController(ILogger<DeleteAllDataController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpGet]
 
     public ActionResult Get(string manualId)
     {
-        App app = new App();
-        var context = new AwesumContext();
-        string email = "", id = "";
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
 
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
+
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
+
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
+
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
+
+        if (!HttpContext.User.Identity.IsAuthenticated)
+        {
+            return BadRequest(_localizer["AuthenticationIsRequired"]);
+        }
+
+        App? app = new App();
+        var context = new AwesumContext();
+
+        string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")
         {
-            var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
+            email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
 
-            app = context.Apps.SingleOrDefault(o => o.Loginid == id);
-            if (app == null)
-            {
-                return BadRequest();
-            }
+        app = context.Apps.SingleOrDefault(o => o.Loginid == id);
+        if (app == null)
+        {
+            return BadRequest();
         }
 
         return Ok();

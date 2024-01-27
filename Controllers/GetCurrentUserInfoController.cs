@@ -21,48 +21,83 @@ public class GetCurrentUserInfoController : ControllerBase
 
     public GetCurrentUserInfoController(ILogger<GetCurrentUserInfoController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpGet]
 
     public ActionResult Get(Guid appId, string name)
     {
-        var followers = new List<Follower>();
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
+
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
+
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
+
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
+
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
+
         if (!HttpContext.User.Identity.IsAuthenticated)
         {
             return BadRequest(_localizer["AuthenticationIsRequired"]);
         }
-        App foundFollowerApp = new App();
+
+        var followers = new List<Follower>();
+
         var context = new AwesumContext();
         string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")
         {
-            var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
             email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
 
-            foundFollowerApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
-            if (foundFollowerApp == null)
+        var foundFollowerApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
+        if (foundFollowerApp == null)
+        {
+            foundFollowerApp = new App()
             {
-                foundFollowerApp = new App()
-                {
-                    Loginid = id,
-                    Email = email,
-                    Name = name
-                };
-                context.Apps.Add(foundFollowerApp);
+                Loginid = id,
+                Email = email,
+                Name = name
+            };
+            context.Apps.Add(foundFollowerApp);
 
-                context.SaveChanges();
+            context.SaveChanges();
 
-                var paddedManualId = foundFollowerApp.Id.ToString().PadLeft(10, '0');
-                foundFollowerApp.ManualId = paddedManualId.Substring(0, 3) + '-' +
-                paddedManualId.Substring(3, 3) + '-' +
-                paddedManualId.Substring(6, 4);
-                context.SaveChanges();
-            }
+            var paddedManualId = foundFollowerApp.Id.ToString().PadLeft(10, '0');
+            foundFollowerApp.ManualId = paddedManualId.Substring(0, 3) + '-' +
+            paddedManualId.Substring(3, 3) + '-' +
+            paddedManualId.Substring(6, 4);
+            context.SaveChanges();
+        }
+
+        if (foundFollowerApp.ManualId == null)
+        {
+            return BadRequest(_localizer["ManualIdIsNull"]);
+        }
+
+        if (HttpContext.User.Identity.AuthenticationType == null)
+        {
+            return BadRequest(_localizer["AuthenticationTypeIsNull"]);
         }
 
         return Ok(new GetCurrentUserInfoResponse()
@@ -71,7 +106,7 @@ public class GetCurrentUserInfoController : ControllerBase
             AuthenticationType = HttpContext.User.Identity.AuthenticationType,
             Email = email,
             Id = id,
-            Followers = awesum.awesum.LeaderOrFollowerRows(context.Followers, foundFollowerApp)
+            Followers = awesum.Awesum.LeaderOrFollowerRows(context.Followers, foundFollowerApp)
         });
     }
 }

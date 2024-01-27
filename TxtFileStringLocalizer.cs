@@ -8,14 +8,14 @@ public class TxtFileStringLocalizer : IStringLocalizer
     private readonly string _cacheKey;
     private readonly string _resourcesPath;
 
-    public TxtFileStringLocalizer(string resourcesPath,IMemoryCache cache = null)
+    public TxtFileStringLocalizer(string resourcesPath, IMemoryCache cache)
     {
         _cache = cache;
         _resourcesPath = resourcesPath;
         _cacheKey = $"TxtFileStringLocalizer_{resourcesPath}";
     }
 
-    public LocalizedString this[string name] => this[name, null];
+    public LocalizedString this[string name] => this[name];
 
     public LocalizedString this[string name, params object[] arguments]
     {
@@ -28,6 +28,8 @@ public class TxtFileStringLocalizer : IStringLocalizer
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(9999);
                 return LoadResources();
             });
+            if (resources == null)
+                throw new Exception("ResourcesAreNull");
             if (resources.TryGetValue(key, out var value))
             {
                 return new LocalizedString(name, value);
@@ -44,6 +46,8 @@ public class TxtFileStringLocalizer : IStringLocalizer
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
             return LoadResources();
         });
+        if (resources == null)
+            throw new Exception("ResourcesAreNull");
         return resources.Select(r =>
         {
             var keyValue = r.Key.Split('|', 2);
@@ -53,7 +57,7 @@ public class TxtFileStringLocalizer : IStringLocalizer
 
     public IStringLocalizer WithCulture(CultureInfo culture)
     {
-        return new TxtFileStringLocalizer(_resourcesPath,_cache);
+        return new TxtFileStringLocalizer(_resourcesPath, _cache);
     }
 
     private Dictionary<string, string> LoadResources()

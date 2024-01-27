@@ -20,4 +20,8 @@ public partial class Database
     public string? Loginid { get; set; }
 
     public string? UniqueId { get; set; }
+
+    public string? GroupName { get; set; }
+
+    public int? AppId { get; set; }
 }

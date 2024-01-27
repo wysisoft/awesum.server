@@ -42,6 +42,7 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
+            entity.Property(e => e.AllowedToInitiateFollows).HasColumnName("allowedToInitiateFollows");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
             entity.Property(e => e.Email).HasColumnName("email");
             entity.Property(e => e.HomePageIcon).HasColumnName("homePageIcon");
@@ -60,7 +61,9 @@ public partial class AwesumContext : DbContext
                 .HasNoKey()
                 .ToTable("databases");
 
+            entity.Property(e => e.AppId).HasColumnName("appId");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
+            entity.Property(e => e.GroupName).HasColumnName("groupName");
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .UseIdentityAlwaysColumn()
@@ -84,6 +87,8 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
+            entity.Property(e => e.AppId).HasColumnName("appId");
+            entity.Property(e => e.DatabaseId).HasColumnName("databaseId");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
             entity.Property(e => e.Grouping).HasColumnName("grouping");
             entity.Property(e => e.Image).HasColumnName("image");
@@ -112,6 +117,8 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
+            entity.Property(e => e.AppId).HasColumnName("appId");
+            entity.Property(e => e.DatabaseGroup).HasColumnName("databaseGroup");
             entity.Property(e => e.DatabaseId).HasColumnName("databaseId");
             entity.Property(e => e.LastModified)
                 .HasColumnType("timestamp without time zone")
@@ -132,6 +139,8 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
+            entity.Property(e => e.AppId).HasColumnName("appId");
+            entity.Property(e => e.DatabaseId).HasColumnName("databaseId");
             entity.Property(e => e.DatabaseTypeId).HasColumnName("databaseTypeId");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
             entity.Property(e => e.LastModified)
@@ -160,9 +169,11 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.DatabaseId).HasColumnName("databaseId");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
             entity.Property(e => e.FollowerAppId).HasColumnName("followerAppId");
+            entity.Property(e => e.FollowerDatabaseGroup).HasColumnName("followerDatabaseGroup");
             entity.Property(e => e.FollowerEmail).HasColumnName("followerEmail");
             entity.Property(e => e.FollowerLoginId).HasColumnName("followerLoginId");
             entity.Property(e => e.FollowerName).HasColumnName("followerName");
+            entity.Property(e => e.InitiatedBy).HasColumnName("initiatedBy");
             entity.Property(e => e.LastModified)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("lastModified");

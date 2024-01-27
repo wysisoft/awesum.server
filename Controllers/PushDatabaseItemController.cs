@@ -21,61 +21,102 @@ public partial class PushDatabaseItemController : ControllerBase
 
     public PushDatabaseItemController(ILogger<PushDatabaseItemController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpPost]
     [RequestSizeLimit(5_242_880)]
-    public ActionResult Post(PushDatabaseItem request)
+    public ActionResult Post(PushDatabaseItemRequest request)
     {
-        var followers = new List<Follower>();
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
+
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
+
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
+
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
+
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
+
         if (!HttpContext.User.Identity.IsAuthenticated)
         {
             return BadRequest(_localizer["AuthenticationIsRequired"]);
         }
-        var context = new AwesumContext();
+
         string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")
         {
-            var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
             email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
 
-            var foundDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.UniqueId == request.DatabaseItem.UniqueId &&
-            o.Loginid == id);
+        var context = new AwesumContext();
+        PushDatabaseItemResponse response = new PushDatabaseItemResponse();
+        DatabaseItem? foundLeaderDatabaseItem = null;
+        Follower? foundFollower = null;
 
-            if (foundDatabaseItem == null)
+        if (request.IsLeader)
+        {
+            try
             {
-                context.DatabaseItems.Add(request.DatabaseItem);
-                context.SaveChanges();
+                foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.Loginid == id
+                && o.Id == request.DatabaseItem.Id);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return BadRequest(_localizer["TooManyLoginDatabaseItems"]);
+            }
+        }
+        else
+        {
+            foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
+            && o.LeaderAppId == request.DatabaseItem.AppId);
+            if (foundFollower is not null)
+            {
+                foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o =>
+                o.Id == request.DatabaseItem.Id);
             }
             else
             {
-                if (request.DatabaseItem != null && (foundDatabaseItem.LastModified > request.DatabaseItem.LastModified ||
-                foundDatabaseItem.Version > request.DatabaseItem.Version) && !request.Force)
-                {
-                    return BadRequest(_localizer["NotMostRecentVersion"]);
-                }
-
-                //we are clear to force the server to be the same as the client 
-
-                if (request.DatabaseItem != null && (foundDatabaseItem.LastModified < request.DatabaseItem.LastModified ||
-                foundDatabaseItem.Version < request.DatabaseItem.Version))
-                {
-                    foundDatabaseItem.LastModified = request.DatabaseItem.LastModified;
-                    foundDatabaseItem.Version = request.DatabaseItem.Version;
-                    foundDatabaseItem.Order = request.DatabaseItem.Order;
-                    foundDatabaseItem.Text= request.DatabaseItem.Text;
-                    foundDatabaseItem.Letters= request.DatabaseItem.Letters;
-                    foundDatabaseItem.Image= request.DatabaseItem.Image;
-                    foundDatabaseItem.Sound= request.DatabaseItem.Sound;
-                    context.SaveChanges();
-                }
+                return BadRequest(_localizer["CouldNotFindDatabaseItemAsFollower"]);
             }
         }
 
-        return Ok();
+        if (foundLeaderDatabaseItem == null)
+        {
+            return BadRequest(_localizer["DatabaseItemNotFound"]);
+        }
+
+        if (!request.Force && foundLeaderDatabaseItem.LastModified >= request.DatabaseItem.LastModified ||
+        foundLeaderDatabaseItem.Version >= request.DatabaseItem.Version)
+        {
+            response.RequiresForce = true;
+            return Ok(response);
+        }
+
+        if (request.Force || foundLeaderDatabaseItem.LastModified < request.DatabaseItem.LastModified ||
+        foundLeaderDatabaseItem.Version < request.DatabaseItem.Version)
+        {
+            context.DatabaseItems.Update(request.DatabaseItem);
+        }
+
+        return Ok(response);
     }
 }

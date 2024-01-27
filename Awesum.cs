@@ -2,7 +2,7 @@ using awesum.server.Model;
 
 namespace awesum
 {
-    class awesum
+    class Awesum
     {
         public static int maxAppCount = 100;
 

@@ -22,4 +22,8 @@ public partial class DatabaseUnit
     public string? Loginid { get; set; }
 
     public string? UniqueId { get; set; }
+
+    public int? DatabaseId { get; set; }
+
+    public int? AppId { get; set; }
 }

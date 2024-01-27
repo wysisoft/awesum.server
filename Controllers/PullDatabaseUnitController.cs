@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using System.Globalization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace csharp.Controllers;
 
@@ -21,61 +22,102 @@ public partial class PullDatabaseUnitController : ControllerBase
 
     public PullDatabaseUnitController(ILogger<PullDatabaseUnitController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpGet]
-    public ActionResult Get(PullDatabaseUnit request)
+    public ActionResult Get(PullDatabaseUnitRequest request)
     {
-        // var followers = new List<Follower>();
-        // if (!HttpContext.User.Identity.IsAuthenticated)
-        // {
-        //     return BadRequest(_localizer["AuthenticationIsRequired"]);
-        // }
-        // var context = new AwesumContext();
-        // string email = "", id = "";
-        // if (HttpContext.User.Identity.AuthenticationType == "Google")
-        // {
-        //     var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
-        //     email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
-        //     id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
 
-        //     var foundDatabaseUnit = context.DatabaseUnits.SingleOrDefault(o => o.UniqueId == request.DatabaseUnit.UniqueId &&
-        //     o.Loginid == id);
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
 
-        //     if (foundDatabaseUnit == null)
-        //     {
-        //         context.DatabaseUnits.Add(request.DatabaseUnit);
-        //         context.SaveChanges();
-        //     }
-        //     else
-        //     {
-        //         if (request.DatabaseUnit != null && (foundDatabaseUnit.LastModified > request.DatabaseUnit.LastModified ||
-        //         foundDatabaseUnit.Version > request.DatabaseUnit.Version) && !request.Force)
-        //         {
-        //             return BadRequest(_localizer["NotMostRecentVersion"]);
-        //         }
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
 
-        //         //we are clear to force the server to be the same as the client 
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
 
-        //         if (request.DatabaseUnit != null && (foundDatabaseUnit.LastModified < request.DatabaseUnit.LastModified ||
-        //         foundDatabaseUnit.Version < request.DatabaseUnit.Version))
-        //         {
-        //             foundDatabaseUnit.LastModified = request.DatabaseUnit.LastModified;
-        //             foundDatabaseUnit.Version = request.DatabaseUnit.Version;
-        //             foundDatabaseUnit.Order = request.DatabaseUnit.Order;
-        //             foundDatabaseUnit.Name= request.DatabaseUnit.Name;
-        //             context.SaveChanges();
-        //         }
-        //     }
-        // }
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
 
-        return Ok();
+        if (!HttpContext.User.Identity.IsAuthenticated)
+        {
+            return BadRequest(_localizer["AuthenticationIsRequired"]);
+        }
+
+        string email = "", id = "";
+        if (HttpContext.User.Identity.AuthenticationType == "Google")
+        {
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
+            email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
+            id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
+
+        var context = new AwesumContext();
+        PullDatabaseUnitResponse response = new PullDatabaseUnitResponse();
+        DatabaseUnit? foundDatabaseUnit = null;
+        Follower? foundFollower = null;
+
+        if (request.IsLeader)
+        {
+            try
+            {
+                foundDatabaseUnit = context.DatabaseUnits.SingleOrDefault(o => o.Loginid == id
+                && o.Id == request.DatabaseUnit.Id);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return BadRequest(_localizer["TooManyDatabaseUnits"]);
+            }
+        }
+        else
+        {
+            //find a follower row that entitles the user to pull this database
+            foundFollower = context.Followers.FirstOrDefault(o =>
+            o.FollowerLoginId == id && o.LeaderAppId == request.AppId &&
+            (o.FollowerDatabaseGroup == "All" || o.DatabaseId == request.DatabaseId));
+            if (foundFollower is not null)
+            {
+                foundDatabaseUnit = context.DatabaseUnits.SingleOrDefault(o => o.Id == request.DatabaseUnit.Id);
+            }
+            else
+            {
+                return BadRequest(_localizer["CouldNotFindDatabaseUnit"]);
+            }
+        }
+
+        if (foundDatabaseUnit == null)
+        {
+            return BadRequest(_localizer["DatabaseUnitNotFound"]);
+        }
+
+        if (foundDatabaseUnit.LastModified > request.DatabaseUnit.LastModified ||
+        foundDatabaseUnit.Version > request.DatabaseUnit.Version)
+        {
+            response.DatabaseUnit = foundDatabaseUnit;
+            response.Items = context.DatabaseItems.Where(o => o.UnitId == request.DatabaseUnit.Id)
+            .Select(o => new DatabaseItem()
+            {
+                Id = o.Id,
+                Version = o.Version,
+                LastModified = o.LastModified
+            }).ToList();
+        }
+
+        return Ok(response);
     }
-}
-
-public class PullDatabaseUnit
-{
 }

@@ -4,6 +4,7 @@ namespace csharp.Controllers;
 
 public class PushDatabaseItemRequest
 {
-    public DatabaseItem DatabaseItem { get; set; }
+    public bool IsLeader { get; set; }
+    public DatabaseItem DatabaseItem { get; set; } = new DatabaseItem();
     public bool Force { get; set; }
 }

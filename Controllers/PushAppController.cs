@@ -21,58 +21,105 @@ public partial class PullAppController : ControllerBase
 
     public PullAppController(ILogger<PullAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpPost]
     [RequestSizeLimit(5_242_880)]
     public ActionResult Post(PushAppRequest request)
     {
-        var followers = new List<Follower>();
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
+
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
+
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
+
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
+
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
+
         if (!HttpContext.User.Identity.IsAuthenticated)
         {
             return BadRequest(_localizer["AuthenticationIsRequired"]);
         }
-        App foundLeaderApp = new App();
-        var context = new AwesumContext();
+
         string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")
         {
-            var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
             email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
 
-            foundLeaderApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
-            if (foundLeaderApp == null)
+        var context = new AwesumContext();
+        PushAppResponse response = new PushAppResponse();
+        App? foundLeaderApp = null;
+        Follower? foundFollower = null;
+
+        if (request.IsLeader)
+        {
+            try
             {
-                return BadRequest(_localizer["AppNotFound"]);
+                foundLeaderApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
             }
-
-            if (foundLeaderApp.Deleted == true)
+            catch (System.InvalidOperationException)
             {
-                return BadRequest(_localizer["AppDeleted"]);
+                return BadRequest(_localizer["TooManyLoginApps"]);
             }
-
-            if (request.App != null && (foundLeaderApp.LastModified > request.App.LastModified ||
-            foundLeaderApp.Version > request.App.Version) && !request.Force)
+        }
+        else
+        {
+            foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
+            && o.LeaderAppId == request.App.Id);
+            if (foundFollower is not null)
             {
-                return BadRequest(_localizer["NotMostRecentVersion"]);
+                foundLeaderApp = context.Apps.SingleOrDefault(o => o.Id == request.App.Id);
             }
-
-            //we are clear to force the server to be the same as the client for the leader app
-
-            if (request.App != null && (foundLeaderApp.LastModified < request.App.LastModified ||
-            foundLeaderApp.Version < request.App.Version))
+            else
             {
-                foundLeaderApp.LastModified = request.App.LastModified;
-                foundLeaderApp.Version = request.App.Version;
-                foundLeaderApp.Name = request.App.Name;
-                context.SaveChanges();
+                return BadRequest(_localizer["CouldNotFindAppAsFollower"]);
             }
         }
 
-        return Ok();
+        if (foundLeaderApp == null)
+        {
+            return BadRequest(_localizer["AppNotFound"]);
+        }
+
+        if (foundLeaderApp.Deleted == true)
+        {
+            return BadRequest(_localizer["AppDeleted"]);
+        }
+
+        if (!request.Force && foundLeaderApp.LastModified >= request.App.LastModified ||
+        foundLeaderApp.Version >= request.App.Version)
+        {
+            response.RequiresForce = true;
+            return Ok(response);
+        }
+
+        if (request.Force || foundLeaderApp.LastModified < request.App.LastModified ||
+        foundLeaderApp.Version < request.App.Version)
+        {
+            context.Apps.Update(request.App);
+        }
+
+        return Ok(response);
     }
 }

@@ -21,56 +21,102 @@ public partial class PullDatabaseTypeController : ControllerBase
 
     public PullDatabaseTypeController(ILogger<PullDatabaseTypeController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
-
         _logger = logger;
-        _localizer = (localizerFactory as TxtFileStringLocalizerFactory).Create2(typeof(SharedResources), cache);
+        var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
+        if (txtFileStringLocalizerFactory == null)
+            throw new System.Exception("localizerFactory is not TxtFileStringLocalizerFactory");
+        _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
     [HttpGet]
-    public ActionResult Get(PullDatabasType request)
+    public ActionResult Get(PullDatabaseTypeRequest request)
     {
-        // var followers = new List<Follower>();
-        // if (!HttpContext.User.Identity.IsAuthenticated)
-        // {
-        //     return BadRequest(_localizer["AuthenticationIsRequired"]);
-        // }
-        // var context = new AwesumContext();
-        // string email = "", id = "";
-        // if (HttpContext.User.Identity.AuthenticationType == "Google")
-        // {
-        //     var claims = (HttpContext.User.Identity as ClaimsIdentity).Claims.ToDictionary(o => o.Type);
-        //     email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
-        //     id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        if (HttpContext == null)
+        {
+            return BadRequest(_localizer["HttpContextIsNull"]);
+        }
 
-        //     var foundDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.UniqueId == request.DatabaseType.UniqueId &&
-        //     o.Loginid == id);
+        if (HttpContext.User == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIsNull"]);
+        }
 
-        //     if (foundDatabaseType == null)
-        //     {
-        //         context.DatabaseTypes.Add(request.DatabaseType);
-        //         context.SaveChanges();
-        //     }
-        //     else
-        //     {
-        //         if (request.DatabaseType != null && (foundDatabaseType.LastModified > request.DatabaseType.LastModified ||
-        //         foundDatabaseType.Version > request.DatabaseType.Version) && !request.Force)
-        //         {
-        //             return BadRequest(_localizer["NotMostRecentVersion"]);
-        //         }
+        if (HttpContext.User.Identity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNull"]);
+        }
 
-        //         //we are clear to force the server to be the same as the client 
+        var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
 
-        //         if (request.DatabaseType != null && (foundDatabaseType.LastModified < request.DatabaseType.LastModified ||
-        //         foundDatabaseType.Version < request.DatabaseType.Version))
-        //         {
-        //             foundDatabaseType.LastModified = request.DatabaseType.LastModified;
-        //             foundDatabaseType.Version = request.DatabaseType.Version;
-        //             foundDatabaseType.Order = request.DatabaseType.Order;
-        //             context.SaveChanges();
-        //         }
-        //     }
-        // }
+        if (claimsIdentity == null)
+        {
+            return BadRequest(_localizer["HttpContextUserIdentityIsNotClaimsIdentity"]);
+        }
 
-        return Ok();
+        if (!HttpContext.User.Identity.IsAuthenticated)
+        {
+            return BadRequest(_localizer["AuthenticationIsRequired"]);
+        }
+
+        string email = "", id = "";
+        if (HttpContext.User.Identity.AuthenticationType == "Google")
+        {
+            var claims = claimsIdentity.Claims.ToDictionary(o => o.Type);
+            email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].Value.ToLower();
+            id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
+        }
+
+        var context = new AwesumContext();
+        PullDatabaseTypeResponse response = new PullDatabaseTypeResponse();
+        DatabaseType? foundDatabaseType = null;
+        Follower? foundFollower = null;
+
+        if (request.IsLeader)
+        {
+            try
+            {
+                foundDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Loginid == id
+                && o.Id == request.DatabaseType.Id);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return BadRequest(_localizer["TooManyDatabaseTypes"]);
+            }
+        }
+        else
+        {
+            //find a follower row that entitles the user to pull this database
+            foundFollower = context.Followers.FirstOrDefault(o =>
+            o.FollowerLoginId == id && o.LeaderAppId == request.AppId &&
+            (o.FollowerDatabaseGroup == "All" || o.DatabaseId == request.DatabaseId));
+            if (foundFollower is not null)
+            {
+                foundDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Id == request.DatabaseType.Id);
+            }
+            else
+            {
+                return BadRequest(_localizer["CouldNotFindDatabaseType"]);
+            }
+        }
+
+        if (foundDatabaseType == null)
+        {
+            return BadRequest(_localizer["DatabaseTypeNotFound"]);
+        }
+
+        if (foundDatabaseType.LastModified > request.DatabaseType.LastModified ||
+        foundDatabaseType.Version > request.DatabaseType.Version)
+        {
+            response.DatabaseType = foundDatabaseType;
+            response.Units = context.DatabaseUnits.Where(o => o.DatabaseTypeId == request.DatabaseType.Id)
+            .Select(o => new DatabaseUnit()
+            {
+                Id = o.Id,
+                Version = o.Version,
+                LastModified = o.LastModified
+            }).ToList();
+        }
+
+        return Ok(response);
     }
 }
