@@ -24,4 +24,6 @@ public partial class Database
     public string? GroupName { get; set; }
 
     public int? AppId { get; set; }
+
+    public string? AppUniqueId { get; set; }
 }

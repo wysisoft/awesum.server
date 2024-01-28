@@ -40,4 +40,6 @@ public partial class DatabaseItem
     public int? DatabaseId { get; set; }
 
     public int? AppId { get; set; }
+
+    public string? AppUniqueId { get; set; }
 }

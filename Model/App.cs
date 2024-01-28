@@ -7,7 +7,7 @@ public partial class App
 {
     public int Id { get; set; }
 
-    public string? ManualId { get; set; } = string.Empty;
+    public string? ManualId { get; set; }
 
     public string? Email { get; set; }
 
@@ -24,4 +24,6 @@ public partial class App
     public int? Version { get; set; }
 
     public bool? AllowedToInitiateFollows { get; set; }
+
+    public string? UniqueId { get; set; }
 }

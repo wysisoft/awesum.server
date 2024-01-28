@@ -52,6 +52,7 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.Loginid).HasColumnName("loginid");
             entity.Property(e => e.ManualId).HasColumnName("manualId");
             entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.UniqueId).HasColumnName("uniqueId");
             entity.Property(e => e.Version).HasColumnName("version");
         });
 
@@ -62,6 +63,7 @@ public partial class AwesumContext : DbContext
                 .ToTable("databases");
 
             entity.Property(e => e.AppId).HasColumnName("appId");
+            entity.Property(e => e.AppUniqueId).HasColumnName("appUniqueId");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
             entity.Property(e => e.GroupName).HasColumnName("groupName");
             entity.Property(e => e.Id)
@@ -88,6 +90,7 @@ public partial class AwesumContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.AppId).HasColumnName("appId");
+            entity.Property(e => e.AppUniqueId).HasColumnName("appUniqueId");
             entity.Property(e => e.DatabaseId).HasColumnName("databaseId");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
             entity.Property(e => e.Grouping).HasColumnName("grouping");
@@ -118,6 +121,7 @@ public partial class AwesumContext : DbContext
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
             entity.Property(e => e.AppId).HasColumnName("appId");
+            entity.Property(e => e.AppUniqueId).HasColumnName("appUniqueId");
             entity.Property(e => e.DatabaseGroup).HasColumnName("databaseGroup");
             entity.Property(e => e.DatabaseId).HasColumnName("databaseId");
             entity.Property(e => e.LastModified)
@@ -140,6 +144,7 @@ public partial class AwesumContext : DbContext
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
             entity.Property(e => e.AppId).HasColumnName("appId");
+            entity.Property(e => e.AppUniqueId).HasColumnName("appUniqueId");
             entity.Property(e => e.DatabaseId).HasColumnName("databaseId");
             entity.Property(e => e.DatabaseTypeId).HasColumnName("databaseTypeId");
             entity.Property(e => e.Deleted).HasColumnName("deleted");
