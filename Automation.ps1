@@ -1,5 +1,4 @@
-#Scaffold-DbContext "Host=localhost;Database=awesum;Username=postgres;Password=This4Now!" Npgsql.EntityFrameworkCore.PostgreSQL -o Model
-dotnet ef dbcontext scaffold "Host=localhost;Database=awesum;Username=postgres;Password=This4Now!" Npgsql.EntityFrameworkCore.PostgreSQL -o ./Model/ -f
+dotnet ef dbcontext scaffold "Name=ConnectionStrings:postgres" Npgsql.EntityFrameworkCore.PostgreSQL -o ./Model/ -f
 Remove-Item "../awesum.client/src/serverClasses/*"
 dotnet cs2ts ./Model/ -i Simple -o ../awesum.client/src/serverClasses/
 dotnet cs2ts ./ControllerResponses/ -i Simple -o ../awesum.client/src/serverClasses/
@@ -12,28 +11,28 @@ Get-ChildItem '../awesum.client/src/serverClasses/*.ts' -Recurse | ForEach-Objec
      (Get-Content $_) -replace 'import type { ServerQueryable } from "./queryable";', '' | Set-Content $_
      (Get-Content $_) -replace '<', '<Server' | Set-Content $_
      (Get-Content $_) -replace 'apps: App\[\];', '' | Set-Content $_
-     (Get-Content $_) -replace 'string;', 'string | null;' | Set-Content $_
-     (Get-Content $_) -replace 'number;', 'number | null;' | Set-Content $_
-     (Get-Content $_) -replace 'boolean;', 'boolean | null;' | Set-Content $_
-     (Get-Content $_) -replace 'App;', 'ServerApp | null;' | Set-Content $_
-     (Get-Content $_) -replace 'DatabaseUnit;', 'ServerDatabaseUnit | null;' | Set-Content $_
-     (Get-Content $_) -replace 'DatabaseItem;', 'ServerDatabaseItem | null;' | Set-Content $_
-     (Get-Content $_) -replace 'DatabaseType;', 'ServerDatabaseType | null;' | Set-Content $_
-     (Get-Content $_) -replace 'Database;', 'ServerDatabase | null;' | Set-Content $_
-     (Get-Content $_) -replace 'Array<ServerFollower>;', 'Array<ServerFollower> | null;' | Set-Content $_
+     #(Get-Content $_) -replace 'string;', 'string | null;' | Set-Content $_
+     #(Get-Content $_) -replace 'number;', 'number | null;' | Set-Content $_
+     #(Get-Content $_) -replace 'boolean;', 'boolean | null;' | Set-Content $_
+     (Get-Content $_) -replace 'App;', 'ServerApp;' | Set-Content $_
+     (Get-Content $_) -replace 'DatabaseUnit;', 'ServerDatabaseUnit;' | Set-Content $_
+     (Get-Content $_) -replace 'DatabaseItem;', 'ServerDatabaseItem;' | Set-Content $_
+     (Get-Content $_) -replace 'DatabaseType;', 'ServerDatabaseType;' | Set-Content $_
+     (Get-Content $_) -replace 'Database;', 'ServerDatabase;' | Set-Content $_
+     (Get-Content $_) -replace 'Array<ServerFollower>;', 'Array<ServerFollower>;' | Set-Content $_
 
 
     (Get-Content $_) -replace 'import type { (.*) } from "./(.*)"', 'import type { $1 } from "./$1"' | Set-Content $_
-    (Get-Content $_) -replace ': App;', ': ServerApp | null;' | Set-Content $_
-    (Get-Content $_) -replace ': DatabaseUnit;', ': ServerDatabaseUnit | null;' | Set-Content $_
-    (Get-Content $_) -replace ': DatabaseItem;', ': ServerDatabaseItem | null;' | Set-Content $_
-    (Get-Content $_) -replace ': DatabaseType;', ': ServerDatabaseType | null;' | Set-Content $_
+    (Get-Content $_) -replace ': App;', ': ServerApp;' | Set-Content $_
+    (Get-Content $_) -replace ': DatabaseUnit;', ': ServerDatabaseUnit;' | Set-Content $_
+    (Get-Content $_) -replace ': DatabaseItem;', ': ServerDatabaseItem;' | Set-Content $_
+    (Get-Content $_) -replace ': DatabaseType;', ': ServerDatabaseType;' | Set-Content $_
 
-    (Get-Content $_) -replace ': DatabaseUnit\[\];', ': ServerDatabaseUnit[] | null;' | Set-Content $_
-    (Get-Content $_) -replace ': DatabaseItem\[\];', ': ServerDatabaseItem[] | null;' | Set-Content $_
-    (Get-Content $_) -replace ': DatabaseType\[\];', ': ServerDatabaseType[] | null;' | Set-Content $_
+    (Get-Content $_) -replace ': DatabaseUnit\[\];', ': ServerDatabaseUnit[];' | Set-Content $_
+    (Get-Content $_) -replace ': DatabaseItem\[\];', ': ServerDatabaseItem[];' | Set-Content $_
+    (Get-Content $_) -replace ': DatabaseType\[\];', ': ServerDatabaseType[];' | Set-Content $_
 
-    (Get-Content $_) -replace '    id: number \| null;', '    id: number;' | Set-Content $_
+
 }
 
 Get-Item -Path "../awesum.client/src/serverClasses/*" | Rename-Item -NewName { "Server" + $_.Name.Substring(0, 1).ToUpper() + $_.Name.Substring(1).Replace(".Ts", ".ts") }
@@ -68,16 +67,24 @@ export class $1 implements $1Interface {
 
 
 
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace "    private _id: number;", "" | Set-Content $_ }
+
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace ": string;", ": string = '';" | Set-Content $_ }
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace ": number;", ": number = 0;" | Set-Content $_ }
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace ": boolean;", ": boolean = false;" | Set-Content $_ }
+
 Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace '\n.*public .*', '' | Set-Content $_ }
-Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace '    private _(.*):(.*)(=.*);.*', '    private _$1:$2$3;
-public get $1():$2 { return this._$1; }public set $1(v:$2) {this._$1=v;this.promises.push(Global.setTablePropertyValueById(this.id, ''$1'',v,this.table,this.promises))}' | Set-Content $_ }
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): string = ''", '    private _$1: string = '''';
+public get $1():string { return this._$1; }public set $1(v:string) {this._$1=v;this.promises.push(Global.setTablePropertyValueById(this.id, ''$1'',v,this.table,this.promises))}' | Set-Content $_ }
 
-Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace '    private _(.*):(.* \| null);.*', '    private _$1:$2 = null;
-public get $1():$2 { return this._$1; }public set $1(v:$2) {this._$1=v;this.promises.push(Global.setTablePropertyValueById(this.id, ''$1'',v,this.table,this.promises))}' | Set-Content $_ }
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): number = 0", '    private _$1: number = 0;
+public get $1():number { return this._$1; }public set $1(v:number) {this._$1=v;this.promises.push(Global.setTablePropertyValueById(this.id, ''$1'',v,this.table,this.promises))}' | Set-Content $_ }
+
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public string (.*) { get; set; } = null!;', 'public string $1 { get; set; } = "";' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public int (.*) { get; set; }', 'public int $1 { get; set; } = 0;' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public DateTime (.*) { get; set; }', 'public DateTime $1 { get; set; } = DateTime.Parse("1900-01-01");' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public bool (.*) { get; set; }', 'public bool $1 { get; set; } = false;' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public Guid (.*) { get; set; }', 'public Guid $1 { get; set; } = Guid.Empty;' | Set-Content $_ }
 
 
 
-
-Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace ": string;", ": string | null = null;" | Set-Content $_ }
-Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace ": number;", ": number | null = null;" | Set-Content $_ }
-Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace ": boolean;", ": boolean | null = null;" | Set-Content $_ }

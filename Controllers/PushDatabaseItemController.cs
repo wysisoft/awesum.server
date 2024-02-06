@@ -70,10 +70,10 @@ public partial class PushDatabaseItemController : ControllerBase
         var context = new AwesumContext();
         PushDatabaseItemResponse response = new PushDatabaseItemResponse();
         DatabaseItem? foundLeaderDatabaseItem = null;
-        Follower? foundFollower = null;
+        //Follower? foundFollower = null;
 
-        if (request.IsLeader)
-        {
+        // if (request.IsLeader)
+        // {
             try
             {
                 foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.Loginid == id
@@ -83,25 +83,26 @@ public partial class PushDatabaseItemController : ControllerBase
             {
                 return BadRequest(_localizer["TooManyLoginDatabaseItems"]);
             }
-        }
-        else
-        {
-            foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
-            && o.LeaderAppId == request.DatabaseItem.AppId);
-            if (foundFollower is not null)
-            {
-                foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o =>
-                o.Id == request.DatabaseItem.Id);
-            }
-            else
-            {
-                return BadRequest(_localizer["CouldNotFindDatabaseItemAsFollower"]);
-            }
-        }
+        // }
+        // else
+        // {
+        //     foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
+        //     && o.LeaderAppId == request.DatabaseItem.AppId);
+        //     if (foundFollower is not null)
+        //     {
+        //         foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o =>
+        //         o.Id == request.DatabaseItem.Id);
+        //     }
+        //     else
+        //     {
+        //         return BadRequest(_localizer["CouldNotFindDatabaseItemAsFollower"]);
+        //     }
+        // }
 
         if (foundLeaderDatabaseItem == null)
         {
-            return BadRequest(_localizer["DatabaseItemNotFound"]);
+            context.DatabaseItems.Add(request.DatabaseItem);
+            return Ok(response);
         }
 
         if (!request.Force && foundLeaderDatabaseItem.LastModified >= request.DatabaseItem.LastModified ||

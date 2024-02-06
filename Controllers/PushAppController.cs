@@ -14,12 +14,12 @@ namespace csharp.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public partial class PullAppController : ControllerBase
+public partial class PushAppController : ControllerBase
 {
-    private readonly ILogger<PullAppController> _logger;
+    private readonly ILogger<PushAppController> _logger;
     private readonly IStringLocalizer _localizer;
 
-    public PullAppController(ILogger<PullAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+    public PushAppController(ILogger<PushAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
@@ -70,10 +70,10 @@ public partial class PullAppController : ControllerBase
         var context = new AwesumContext();
         PushAppResponse response = new PushAppResponse();
         App? foundLeaderApp = null;
-        Follower? foundFollower = null;
+        //Follower? foundFollower = null;
 
-        if (request.IsLeader)
-        {
+        // if (request.IsLeader)
+        // {
             try
             {
                 foundLeaderApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
@@ -82,24 +82,25 @@ public partial class PullAppController : ControllerBase
             {
                 return BadRequest(_localizer["TooManyLoginApps"]);
             }
-        }
-        else
-        {
-            foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
-            && o.LeaderAppId == request.App.Id);
-            if (foundFollower is not null)
-            {
-                foundLeaderApp = context.Apps.SingleOrDefault(o => o.Id == request.App.Id);
-            }
-            else
-            {
-                return BadRequest(_localizer["CouldNotFindAppAsFollower"]);
-            }
-        }
+        // }
+        // else
+        // {
+        //     foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
+        //     && o.LeaderAppId == request.App.Id);
+        //     if (foundFollower is not null)
+        //     {
+        //         foundLeaderApp = context.Apps.SingleOrDefault(o => o.Id == request.App.Id);
+        //     }
+        //     else
+        //     {
+        //         return BadRequest(_localizer["CouldNotFindAppAsFollower"]);
+        //     }
+        // }
 
         if (foundLeaderApp == null)
         {
-            return BadRequest(_localizer["AppNotFound"]);
+            context.Apps.Add(request.App);
+            return Ok(response);
         }
 
         if (foundLeaderApp.Deleted == true)

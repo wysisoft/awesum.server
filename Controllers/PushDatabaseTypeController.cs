@@ -70,37 +70,38 @@ public partial class PushDatabaseTypeController : ControllerBase
         var context = new AwesumContext();
         PushDatabaseTypeResponse response = new PushDatabaseTypeResponse();
         DatabaseType? foundLeaderDatabaseType = null;
-        Follower? foundFollower = null;
+        //Follower? foundFollower = null;
 
-        if (request.IsLeader)
+        // if (request.IsLeader)
+        // {
+        try
         {
-            try
-            {
-                foundLeaderDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Loginid == id
-                && o.Id == request.DatabaseType.Id);
-            }
-            catch (System.InvalidOperationException)
-            {
-                return BadRequest(_localizer["TooManyLoginDatabaseTypes"]);
-            }
+            foundLeaderDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Loginid == id
+            && o.Id == request.DatabaseType.Id);
         }
-        else
+        catch (System.InvalidOperationException)
         {
-            foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
-            && o.LeaderAppId == request.DatabaseType.AppId);
-            if (foundFollower is not null)
-            {
-                foundLeaderDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Id == request.DatabaseType.Id);
-            }
-            else
-            {
-                return BadRequest(_localizer["CouldNotFindDatabaseTypeAsFollower"]);
-            }
+            return BadRequest(_localizer["TooManyLoginDatabaseTypes"]);
         }
+        // }
+        // else
+        // {
+        //     foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
+        //     && o.LeaderAppId == request.DatabaseType.AppId);
+        //     if (foundFollower is not null)
+        //     {
+        //         foundLeaderDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Id == request.DatabaseType.Id);
+        //     }
+        //     else
+        //     {
+        //         return BadRequest(_localizer["CouldNotFindDatabaseTypeAsFollower"]);
+        //     }
+        // }
 
         if (foundLeaderDatabaseType == null)
         {
-            return BadRequest(_localizer["DatabaseTypeNotFound"]);
+            context.DatabaseTypes.Add(request.DatabaseType);
+            return Ok(response);
         }
 
         if (!request.Force && foundLeaderDatabaseType.LastModified >= request.DatabaseType.LastModified ||

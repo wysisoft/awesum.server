@@ -1,0 +1,2 @@
+HelloWorld=1
+AuthenticationIsRequired=Authentication Is Required

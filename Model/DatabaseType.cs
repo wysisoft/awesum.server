@@ -1,29 +1,29 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace awesum.server.Model;
 
 public partial class DatabaseType
 {
-    public int Id { get; set; }
+    public int Id { get; set; } = 0;
 
-    public string? Type { get; set; }
+    public string Type { get; set; } = "";
 
-    public int? DatabaseId { get; set; }
+    public int DatabaseId { get; set; } = 0;
 
-    public DateTime? LastModified { get; set; }
+    public DateTime LastModified { get; set; } = DateTime.Parse("1900-01-01");
 
-    public int? Version { get; set; }
+    public int Version { get; set; } = 0;
 
-    public int? Order { get; set; }
+    public int Order { get; set; } = 0;
 
-    public string? Loginid { get; set; }
+    public string Loginid { get; set; } = "";
 
-    public string? UniqueId { get; set; }
+    public string UniqueId { get; set; } = "";
 
-    public string? DatabaseGroup { get; set; }
+    public string DatabaseGroup { get; set; } = "";
 
-    public int? AppId { get; set; }
+    public int AppId { get; set; } = 0;
 
-    public string? AppUniqueId { get; set; }
+    public string AppUniqueId { get; set; } = "";
 }

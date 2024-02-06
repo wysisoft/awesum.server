@@ -70,37 +70,38 @@ public partial class PushDatabaseController : ControllerBase
         var context = new AwesumContext();
         PushDatabaseResponse response = new PushDatabaseResponse();
         Database? foundLeaderDatabase = null;
-        Follower? foundFollower = null;
+        //Follower? foundFollower = null;
 
-        if (request.IsLeader)
+        // if (request.IsLeader)
+        // {
+        try
         {
-            try
-            {
-                foundLeaderDatabase = context.Databases.SingleOrDefault(o => o.Loginid == id
-                && o.Id == request.Database.Id);
-            }
-            catch (System.InvalidOperationException)
-            {
-                return BadRequest(_localizer["TooManyLoginDatabases"]);
-            }
+            foundLeaderDatabase = context.Databases.SingleOrDefault(o => o.Loginid == id
+            && o.Id == request.Database.Id);
         }
-        else
+        catch (System.InvalidOperationException)
         {
-            foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
-            && o.LeaderAppId == request.Database.AppId);
-            if (foundFollower is not null)
-            {
-                foundLeaderDatabase = context.Databases.SingleOrDefault(o => o.Id == request.Database.Id);
-            }
-            else
-            {
-                return BadRequest(_localizer["CouldNotFindDatabaseAsFollower"]);
-            }
+            return BadRequest(_localizer["TooManyLoginDatabases"]);
         }
+        // }
+        // else
+        // {
+        //     foundFollower = context.Followers.FirstOrDefault(o => o.FollowerLoginId == id
+        //     && o.LeaderAppId == request.Database.AppId);
+        //     if (foundFollower is not null)
+        //     {
+        //         foundLeaderDatabase = context.Databases.SingleOrDefault(o => o.Id == request.Database.Id);
+        //     }
+        //     else
+        //     {
+        //         return BadRequest(_localizer["CouldNotFindDatabaseAsFollower"]);
+        //     }
+        // }
 
         if (foundLeaderDatabase == null)
         {
-            return BadRequest(_localizer["DatabaseNotFound"]);
+            context.Databases.Add(request.Database);
+            return Ok(response);
         }
 
         if (foundLeaderDatabase.Deleted == true)

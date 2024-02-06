@@ -1,45 +1,45 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace awesum.server.Model;
 
 public partial class DatabaseItem
 {
-    public int Id { get; set; }
+    public int Id { get; set; } = 0;
 
-    public string? Letters { get; set; }
+    public string Letters { get; set; } = "";
 
-    public int? Order { get; set; }
+    public int Order { get; set; } = 0;
 
-    public string? Image { get; set; }
+    public string Image { get; set; } = "";
 
-    public string? Sound { get; set; }
+    public string Sound { get; set; } = "";
 
-    public int? Type { get; set; }
+    public int Type { get; set; } = 0;
 
-    public int? UnitId { get; set; }
+    public int UnitId { get; set; } = 0;
 
-    public int? RewardType { get; set; }
+    public int RewardType { get; set; } = 0;
 
-    public string? Reward { get; set; }
+    public string Reward { get; set; } = "";
 
-    public int? Grouping { get; set; }
+    public int Grouping { get; set; } = 0;
 
-    public DateTime? LastModified { get; set; }
+    public DateTime LastModified { get; set; } = DateTime.Parse("1900-01-01");
 
-    public string? Text { get; set; }
+    public string Text { get; set; } = "";
 
-    public bool? Deleted { get; set; }
+    public bool Deleted { get; set; } = false;
 
-    public int? Version { get; set; }
+    public int Version { get; set; } = 0;
 
-    public string? Loginid { get; set; }
+    public string Loginid { get; set; } = "";
 
-    public string? UniqueId { get; set; }
+    public string UniqueId { get; set; } = "";
 
-    public int? DatabaseId { get; set; }
+    public int DatabaseId { get; set; } = 0;
 
-    public int? AppId { get; set; }
+    public int AppId { get; set; } = 0;
 
-    public string? AppUniqueId { get; set; }
+    public string AppUniqueId { get; set; } = "";
 }

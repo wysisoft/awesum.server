@@ -14,12 +14,12 @@ namespace csharp.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public partial class PushAppController : ControllerBase
+public partial class PullAppController : ControllerBase
 {
-    private readonly ILogger<PushAppController> _logger;
+    private readonly ILogger<PullAppController> _logger;
     private readonly IStringLocalizer _localizer;
 
-    public PushAppController(ILogger<PushAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+    public PullAppController(ILogger<PullAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
     {
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
