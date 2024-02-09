@@ -18,9 +18,11 @@ public partial class PushDatabaseItemController : ControllerBase
 {
     private readonly ILogger<PushDatabaseItemController> _logger;
     private readonly IStringLocalizer _localizer;
-
-    public PushDatabaseItemController(ILogger<PushDatabaseItemController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+    private readonly AwesumContext _context;
+    public PushDatabaseItemController(ILogger<PushDatabaseItemController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache,
+    AwesumContext context)
     {
+        _context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -67,22 +69,22 @@ public partial class PushDatabaseItemController : ControllerBase
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
         }
 
-        var context = new AwesumContext();
+        var context = _context;
         PushDatabaseItemResponse response = new PushDatabaseItemResponse();
         DatabaseItem? foundLeaderDatabaseItem = null;
         //Follower? foundFollower = null;
 
         // if (request.IsLeader)
         // {
-            try
-            {
-                foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.Loginid == id
-                && o.Id == request.DatabaseItem.Id);
-            }
-            catch (System.InvalidOperationException)
-            {
-                return BadRequest(_localizer["TooManyLoginDatabaseItems"]);
-            }
+        try
+        {
+            foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.Loginid == id
+            && o.Id == request.DatabaseItem.Id);
+        }
+        catch (System.InvalidOperationException)
+        {
+            return BadRequest(_localizer["TooManyLoginDatabaseItems"]);
+        }
         // }
         // else
         // {

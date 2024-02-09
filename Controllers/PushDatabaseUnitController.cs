@@ -19,8 +19,11 @@ public partial class PushDatabaseUnitController : ControllerBase
     private readonly ILogger<PushDatabaseUnitController> _logger;
     private readonly IStringLocalizer _localizer;
 
-    public PushDatabaseUnitController(ILogger<PushDatabaseUnitController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+private readonly AwesumContext _context;
+    public PushDatabaseUnitController(ILogger<PushDatabaseUnitController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache, 
+    AwesumContext context)
     {
+_context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -67,7 +70,7 @@ public partial class PushDatabaseUnitController : ControllerBase
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
         }
 
-        var context = new AwesumContext();
+        var context = _context;
         PushDatabaseUnitResponse response = new PushDatabaseUnitResponse();
         DatabaseUnit? foundLeaderDatabaseUnit = null;
         //Follower? foundFollower = null;

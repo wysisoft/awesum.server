@@ -18,9 +18,11 @@ public class DeleteAllDataController : ControllerBase
 {
     private readonly ILogger<DeleteAllDataController> _logger;
     private readonly IStringLocalizer _localizer;
-
-    public DeleteAllDataController(ILogger<DeleteAllDataController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+private readonly AwesumContext _context;
+    public DeleteAllDataController(ILogger<DeleteAllDataController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache,
+    AwesumContext context)
     {
+        _context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -60,7 +62,7 @@ public class DeleteAllDataController : ControllerBase
         }
 
         App? app = new App();
-        var context = new AwesumContext();
+        var context = _context;
 
         string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")

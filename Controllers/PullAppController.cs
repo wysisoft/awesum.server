@@ -18,9 +18,11 @@ public partial class PullAppController : ControllerBase
 {
     private readonly ILogger<PullAppController> _logger;
     private readonly IStringLocalizer _localizer;
-
-    public PullAppController(ILogger<PullAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+private readonly AwesumContext _context;
+    public PullAppController(ILogger<PullAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache
+    , AwesumContext context)
     {
+        _context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -66,7 +68,7 @@ public partial class PullAppController : ControllerBase
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
         }
 
-        var context = new AwesumContext();
+        var context = _context;
         PullAppResponse response = new PullAppResponse();
         App? foundLeaderApp = null;
         Follower? foundFollower = null;

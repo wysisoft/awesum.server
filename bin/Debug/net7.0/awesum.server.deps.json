@@ -19,6 +19,14 @@
         },
         "runtime": {
           "awesum.server.dll": {}
+        },
+        "resources": {
+          "en-GB/awesum.server.resources.dll": {
+            "locale": "en-GB"
+          },
+          "en-US/awesum.server.resources.dll": {
+            "locale": "en-US"
+          }
         }
       },
       "Humanizer.Core/2.14.1": {

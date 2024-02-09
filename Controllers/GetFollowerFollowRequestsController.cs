@@ -15,10 +15,12 @@ public class GetFollowerFollowRequestsController : ControllerBase
     private readonly ILogger<GetFollowerFollowRequestsController> _logger;
 
     private readonly IStringLocalizer _localizer;
+    private readonly AwesumContext _context;
 
     public GetFollowerFollowRequestsController(ILogger<GetFollowerFollowRequestsController> logger
-    , IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+    , IStringLocalizerFactory localizerFactory, IMemoryCache cache, AwesumContext context)
     {
+        _context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -65,7 +67,7 @@ public class GetFollowerFollowRequestsController : ControllerBase
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
         }
 
-        var context = new AwesumContext();
+        var context = _context;
 
         var foundFollowerApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
         if (foundFollowerApp == null)

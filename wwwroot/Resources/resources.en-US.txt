@@ -1,2 +1,3 @@
 UnknownLeaderApp=Unknown leader app
 FollowRequestAlreadyExists=Follow request already exists
+AuthenticationIsRequired=Authentication Is Required

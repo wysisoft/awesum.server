@@ -15,10 +15,11 @@ public class AddFollowRequestController : ControllerBase
     private readonly ILogger<AddFollowRequestController> _logger;
 
     private readonly IStringLocalizer _localizer;
-
+private readonly AwesumContext _context;
     public AddFollowRequestController(ILogger<AddFollowRequestController> logger
-    , IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+    , IStringLocalizerFactory localizerFactory, IMemoryCache cache, AwesumContext context)
     {
+        _context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -58,7 +59,7 @@ public class AddFollowRequestController : ControllerBase
         }
 
         App? foundFollowerApp = new App();
-        var context = new AwesumContext();
+        var context = _context;
 
         string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")

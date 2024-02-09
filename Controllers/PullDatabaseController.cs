@@ -18,9 +18,12 @@ public partial class PullDatabaseController : ControllerBase
 {
     private readonly ILogger<PullDatabaseController> _logger;
     private readonly IStringLocalizer _localizer;
+    private readonly AwesumContext _context;
 
-    public PullDatabaseController(ILogger<PullDatabaseController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+    public PullDatabaseController(ILogger<PullDatabaseController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache,
+    AwesumContext context)
     {
+        _context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -66,7 +69,7 @@ public partial class PullDatabaseController : ControllerBase
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
         }
 
-        var context = new AwesumContext();
+        var context = _context;
         PullDatabaseResponse response = new PullDatabaseResponse();
         Database? foundDatabase = null;
         Follower? foundFollower = null;

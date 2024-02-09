@@ -19,8 +19,13 @@ public class GetCurrentUserInfoController : ControllerBase
     private readonly ILogger<GetCurrentUserInfoController> _logger;
     private readonly IStringLocalizer _localizer;
 
-    public GetCurrentUserInfoController(ILogger<GetCurrentUserInfoController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache)
+    private readonly AwesumContext _context;
+
+
+    public GetCurrentUserInfoController(ILogger<GetCurrentUserInfoController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache,
+    AwesumContext context)
     {
+        _context = context;
         _logger = logger;
         var txtFileStringLocalizerFactory = localizerFactory as TxtFileStringLocalizerFactory;
         if (txtFileStringLocalizerFactory == null)
@@ -61,7 +66,7 @@ public class GetCurrentUserInfoController : ControllerBase
 
         var followers = new List<Follower>();
 
-        var context = new AwesumContext();
+        var context = _context;
         string email = "", id = "";
         if (HttpContext.User.Identity.AuthenticationType == "Google")
         {

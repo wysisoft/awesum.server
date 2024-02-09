@@ -80,11 +80,16 @@ public get $1():string { return this._$1; }public set $1(v:string) {this._$1=v;t
 Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): number = 0", '    private _$1: number = 0;
 public get $1():number { return this._$1; }public set $1(v:number) {this._$1=v;this.promises.push(Global.setTablePropertyValueById(this.id, ''$1'',v,this.table,this.promises))}' | Set-Content $_ }
 
-Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public string (.*) { get; set; } = null!;', 'public string $1 { get; set; } = "";' | Set-Content $_ }
-Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public int (.*) { get; set; }', 'public int $1 { get; set; } = 0;' | Set-Content $_ }
-Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public DateTime (.*) { get; set; }', 'public DateTime $1 { get; set; } = DateTime.Parse("1900-01-01");' | Set-Content $_ }
-Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public bool (.*) { get; set; }', 'public bool $1 { get; set; } = false;' | Set-Content $_ }
-Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public Guid (.*) { get; set; }', 'public Guid $1 { get; set; } = Guid.Empty;' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public string (.*) { get; set; } = null!;\n', 'public string $1 { get; set; } = "";
+' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public int (.*) { get; set; }\n', 'public int $1 { get; set; } = 0;
+' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public DateTime (.*) { get; set; }\n', 'public DateTime $1 { get; set; } = DateTime.Parse("1900-01-01");
+' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public bool (.*) { get; set; }\n', 'public bool $1 { get; set; } = false;
+' | Set-Content $_ }
+Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public Guid (.*) { get; set; }\n', 'public Guid $1 { get; set; } = Guid.Empty;
+' | Set-Content $_ }
 
 
 

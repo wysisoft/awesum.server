@@ -1,13 +1,18 @@
+using awesum.server.Model;
 using csharp;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AwesumContext>(
+    opt => opt.UseNpgsql("Name=ConnectionStrings:postgres"));
 
 builder.Services.AddCors(options =>
 {

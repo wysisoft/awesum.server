@@ -15,7 +15,28 @@ public class TxtFileStringLocalizer : IStringLocalizer
         _cacheKey = $"TxtFileStringLocalizer_{resourcesPath}";
     }
 
-    public LocalizedString this[string name] => this[name];
+
+    public LocalizedString this[string name]
+    {
+        get
+        {
+            var culture = CultureInfo.CurrentUICulture;
+            var key = $"{culture.Name}|{name}";
+            var resources = _cache.GetOrCreate(_cacheKey, entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(9999);
+                return LoadResources();
+            });
+            if (resources == null)
+                throw new Exception("ResourcesAreNull");
+            if (resources.TryGetValue(key, out var value))
+            {
+                return new LocalizedString(name, value);
+            }
+
+            return new LocalizedString(name, name, true);
+        }
+    }
 
     public LocalizedString this[string name, params object[] arguments]
     {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +6,8 @@ namespace awesum.server.Model;
 
 public partial class AwesumContext : DbContext
 {
-    public AwesumContext()
-    {
-    }
+
+    
 
     public AwesumContext(DbContextOptions<AwesumContext> options)
         : base(options)
@@ -26,9 +25,6 @@ public partial class AwesumContext : DbContext
     public virtual DbSet<DatabaseUnit> DatabaseUnits { get; set; }
 
     public virtual DbSet<Follower> Followers { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql("Name=ConnectionStrings:postgres");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
