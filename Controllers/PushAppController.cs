@@ -18,7 +18,7 @@ public partial class PushAppController : ControllerBase
 {
     private readonly ILogger<PushAppController> _logger;
     private readonly IStringLocalizer _localizer;
-private readonly AwesumContext _context;
+    private readonly AwesumContext _context;
     public PushAppController(ILogger<PushAppController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache,
     AwesumContext context)
     {
@@ -76,14 +76,14 @@ private readonly AwesumContext _context;
 
         // if (request.IsLeader)
         // {
-            try
-            {
-                foundLeaderApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
-            }
-            catch (System.InvalidOperationException)
-            {
-                return BadRequest(_localizer["TooManyLoginApps"]);
-            }
+        try
+        {
+            foundLeaderApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
+        }
+        catch (System.InvalidOperationException)
+        {
+            return BadRequest(_localizer["TooManyLoginApps"]);
+        }
         // }
         // else
         // {
@@ -101,7 +101,11 @@ private readonly AwesumContext _context;
 
         if (foundLeaderApp == null)
         {
+            request.App.Id = 0;
+            request.App.Loginid = id;
+            request.App.Email = email;
             context.Apps.Add(request.App);
+            context.SaveChanges();
             return Ok(response);
         }
 
@@ -110,8 +114,8 @@ private readonly AwesumContext _context;
             return BadRequest(_localizer["AppDeleted"]);
         }
 
-        if (!request.Force && foundLeaderApp.LastModified >= request.App.LastModified ||
-        foundLeaderApp.Version >= request.App.Version)
+        if (!request.Force && foundLeaderApp.LastModified > request.App.LastModified ||
+        foundLeaderApp.Version > request.App.Version)
         {
             response.RequiresForce = true;
             return Ok(response);
@@ -121,8 +125,10 @@ private readonly AwesumContext _context;
         foundLeaderApp.Version < request.App.Version)
         {
             context.Apps.Update(request.App);
+            context.SaveChanges();
         }
 
+        response.AppId = request.App.Id;
         return Ok(response);
     }
 }

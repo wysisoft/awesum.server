@@ -7,94 +7,97 @@ DROP TABLE IF EXISTS public.apps;
 
 CREATE TABLE IF NOT EXISTS public.apps
 (
-    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    "manualId" text COLLATE pg_catalog."default",
-    email text COLLATE pg_catalog."default",
-    loginid text COLLATE pg_catalog."default",
-    name text COLLATE pg_catalog."default",
-    "lastModified" timestamp without time zone,
-    "homePageIcon" text COLLATE pg_catalog."default",
-    deleted boolean,
-    version integer,
-    "allowedToInitiateFollows" boolean,
-    "uniqueId" text COLLATE pg_catalog."default",
-    CONSTRAINT apps_pkey PRIMARY KEY (id)
+    "manualId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    email text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    loginid text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    name text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
+    "homePageIcon" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    deleted boolean NOT NULL DEFAULT false,
+    version integer NOT NULL DEFAULT 0,
+    "allowedToInitiateFollows" boolean NOT NULL DEFAULT false,
+    "uniqueId" uuid NOT NULL,
+    "authenticationType" text COLLATE pg_catalog."default" NOT NULL
 );
 
 DROP TABLE IF EXISTS public."databaseItems";
 
 CREATE TABLE IF NOT EXISTS public."databaseItems"
 (
-    id integer NOT NULL,
-    letters text COLLATE pg_catalog."default",
-    "order" integer,
-    image text COLLATE pg_catalog."default",
-    sound text COLLATE pg_catalog."default",
-    type integer,
-    "unitId" integer,
-    "rewardType" integer,
-    reward text COLLATE pg_catalog."default",
-    "grouping" integer,
-    "lastModified" timestamp without time zone,
-    text text COLLATE pg_catalog."default",
-    deleted boolean,
-    version integer,
-    loginid text COLLATE pg_catalog."default",
-    "uniqueId" text COLLATE pg_catalog."default",
-    "databaseId" integer,
-    "appId" integer,
-    CONSTRAINT "databaseItems_pkey" PRIMARY KEY (id)
+    letters text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "order" integer NOT NULL DEFAULT 0,
+    image text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    sound text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    type integer NOT NULL DEFAULT 0,
+    "unitId" integer NOT NULL DEFAULT 0,
+    "rewardType" integer NOT NULL DEFAULT 0,
+    reward text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "grouping" integer NOT NULL DEFAULT 0,
+    "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
+    text text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    deleted boolean NOT NULL DEFAULT false,
+    version integer NOT NULL DEFAULT 0,
+    loginid text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "databaseId" integer NOT NULL DEFAULT 0,
+    "appId" integer NOT NULL DEFAULT 0,
+    "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "unitUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "uniqueId" uuid NOT NULL,
+    CONSTRAINT "databaseItems_pkey" PRIMARY KEY ("uniqueId")
 );
 
 DROP TABLE IF EXISTS public."databaseTypes";
 
 CREATE TABLE IF NOT EXISTS public."databaseTypes"
 (
-    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    type text COLLATE pg_catalog."default",
-    "databaseId" integer,
-    "lastModified" timestamp without time zone,
-    version integer,
-    "order" integer,
-    loginid text COLLATE pg_catalog."default",
-    "uniqueId" text COLLATE pg_catalog."default",
-    "databaseGroup" text COLLATE pg_catalog."default",
-    "appId" integer,
-    CONSTRAINT types_pkey PRIMARY KEY (id)
+    type text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "databaseId" integer NOT NULL DEFAULT 0,
+    "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
+    version integer NOT NULL DEFAULT 0,
+    "order" integer NOT NULL DEFAULT 0,
+    loginid text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "databaseGroup" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "appId" integer NOT NULL DEFAULT 0,
+    "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "databaseUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "uniqueId" uuid NOT NULL,
+    CONSTRAINT "databaseTypes_pkey" PRIMARY KEY ("uniqueId")
 );
 
 DROP TABLE IF EXISTS public."databaseUnits";
 
 CREATE TABLE IF NOT EXISTS public."databaseUnits"
 (
-    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    name text COLLATE pg_catalog."default",
-    "order" integer,
-    "lastModified" timestamp without time zone,
-    deleted boolean,
-    "databaseTypeId" integer,
-    version integer,
-    loginid text COLLATE pg_catalog."default",
-    "uniqueId" text COLLATE pg_catalog."default",
-    "databaseId" integer,
-    "appId" integer,
-    CONSTRAINT "databaseProperties_pkey" PRIMARY KEY (id)
+    name text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "order" integer NOT NULL DEFAULT 0,
+    "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
+    deleted boolean NOT NULL DEFAULT false,
+    "databaseTypeId" integer NOT NULL DEFAULT 0,
+    version integer NOT NULL DEFAULT 0,
+    loginid text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "databaseId" integer NOT NULL DEFAULT 0,
+    "appId" integer NOT NULL DEFAULT 0,
+    "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "databaseTypeUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "uniqueId" uuid NOT NULL,
+    CONSTRAINT "databaseUnits_pkey" PRIMARY KEY ("uniqueId")
 );
 
 DROP TABLE IF EXISTS public.databases;
 
 CREATE TABLE IF NOT EXISTS public.databases
 (
-    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    name text COLLATE pg_catalog."default",
-    "lastModified" timestamp without time zone,
-    deleted boolean,
-    version integer,
-    "order" integer,
-    loginid text COLLATE pg_catalog."default",
-    "uniqueId" text COLLATE pg_catalog."default",
-    "groupName" text COLLATE pg_catalog."default",
-    "appId" integer
+    name text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
+    deleted boolean NOT NULL DEFAULT false,
+    version integer NOT NULL DEFAULT 0,
+    "order" integer NOT NULL DEFAULT 0,
+    loginid text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "groupName" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "appId" integer NOT NULL DEFAULT 0,
+    "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "uniqueId" uuid NOT NULL,
+    CONSTRAINT databases_pkey PRIMARY KEY ("uniqueId")
 );
 
 DROP TABLE IF EXISTS public.followers;
@@ -102,22 +105,22 @@ DROP TABLE IF EXISTS public.followers;
 CREATE TABLE IF NOT EXISTS public.followers
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    "leaderAppId" integer,
-    "followerAppId" integer,
-    "followerName" text COLLATE pg_catalog."default",
-    "followerEmail" text COLLATE pg_catalog."default",
-    "leaderName" text COLLATE pg_catalog."default",
-    "leaderEmail" text COLLATE pg_catalog."default",
-    "lastModified" timestamp without time zone,
-    "leaderAccepted" boolean,
-    "leaderRemoved" boolean,
-    "uniqueId" uuid,
-    deleted boolean,
-    "followerLoginId" text COLLATE pg_catalog."default",
-    version integer,
-    "databaseId" integer,
-    "initiatedBy" integer,
-    "followerDatabaseGroup" text COLLATE pg_catalog."default",
+    "leaderAppId" integer NOT NULL DEFAULT 0,
+    "followerAppId" integer NOT NULL DEFAULT 0,
+    "followerName" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "followerEmail" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "leaderName" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "leaderEmail" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
+    "leaderAccepted" boolean NOT NULL DEFAULT false,
+    "leaderRemoved" boolean NOT NULL DEFAULT false,
+    "uniqueId" uuid NOT NULL,
+    deleted boolean NOT NULL DEFAULT false,
+    "followerLoginId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    version integer NOT NULL DEFAULT 0,
+    "databaseId" integer NOT NULL DEFAULT 0,
+    "initiatedBy" integer NOT NULL DEFAULT 0,
+    "followerDatabaseGroup" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     CONSTRAINT followrequests_pkey PRIMARY KEY (id)
 );
 END;

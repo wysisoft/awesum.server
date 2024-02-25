@@ -5,8 +5,6 @@ namespace awesum.server.Model;
 
 public partial class App
 {
-    public int Id { get; set; } = 0;
-
     public string ManualId { get; set; } = "";
 
     public string Email { get; set; } = "";
@@ -25,5 +23,9 @@ public partial class App
 
     public bool AllowedToInitiateFollows { get; set; } = false;
 
-    public string UniqueId { get; set; } = "";
+    public Guid UniqueId { get; set; } = Guid.Empty;
+
+    public string AuthenticationType { get; set; } = "";
+
+    public int Id { get; set; } = 0;
 }

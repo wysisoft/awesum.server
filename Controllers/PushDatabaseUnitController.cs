@@ -80,7 +80,7 @@ _context = context;
         try
         {
             foundLeaderDatabaseUnit = context.DatabaseUnits.SingleOrDefault(o => o.Loginid == id
-            && o.Id == request.DatabaseUnit.Id);
+            && (o.Id == request.DatabaseUnit.Id || o.UniqueId == request.DatabaseUnit.UniqueId));
         }
         catch (System.InvalidOperationException)
         {
@@ -103,12 +103,15 @@ _context = context;
 
         if (foundLeaderDatabaseUnit == null)
         {
+            request.DatabaseUnit.Loginid = id;
+            request.DatabaseUnit.Id = 0;
             context.DatabaseUnits.Add(request.DatabaseUnit);
+            context.SaveChanges();
             return Ok(response);
         }
 
-        if (!request.Force && foundLeaderDatabaseUnit.LastModified >= request.DatabaseUnit.LastModified ||
-        foundLeaderDatabaseUnit.Version >= request.DatabaseUnit.Version)
+        if (!request.Force && foundLeaderDatabaseUnit.LastModified > request.DatabaseUnit.LastModified ||
+        foundLeaderDatabaseUnit.Version > request.DatabaseUnit.Version)
         {
             response.RequiresForce = true;
             return Ok(response);
@@ -118,8 +121,10 @@ _context = context;
         foundLeaderDatabaseUnit.Version < request.DatabaseUnit.Version)
         {
             context.DatabaseUnits.Update(request.DatabaseUnit);
+            context.SaveChanges();
         }
 
+        response.DatabaseUnitId = request.DatabaseUnit.Id;
         return Ok(response);
     }
 }

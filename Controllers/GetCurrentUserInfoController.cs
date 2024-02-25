@@ -33,9 +33,9 @@ public class GetCurrentUserInfoController : ControllerBase
         _localizer = txtFileStringLocalizerFactory.Create2(typeof(SharedResources), cache);
     }
 
-    [HttpGet]
-
-    public ActionResult Get(Guid appId, string name)
+    [HttpPost]
+    [RequestSizeLimit(5_242_880)]
+    public ActionResult Post(App app)
     {
         if (HttpContext == null)
         {
@@ -75,27 +75,27 @@ public class GetCurrentUserInfoController : ControllerBase
             id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"].Value.ToLower();
         }
 
-        var foundFollowerApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
-        if (foundFollowerApp == null)
+        var foundLeaderApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
+        if (foundLeaderApp == null)
         {
-            foundFollowerApp = new App()
-            {
-                Loginid = id,
-                Email = email,
-                Name = name
-            };
-            context.Apps.Add(foundFollowerApp);
+            foundLeaderApp = app;
+
+            foundLeaderApp.Id = 0;
+            foundLeaderApp.Loginid = id;
+            foundLeaderApp.Email = email;
+
+            context.Apps.Add(foundLeaderApp);
 
             context.SaveChanges();
 
-            var paddedManualId = foundFollowerApp.Id.ToString().PadLeft(10, '0');
-            foundFollowerApp.ManualId = paddedManualId.Substring(0, 3) + '-' +
+            var paddedManualId = foundLeaderApp.Id.ToString().PadLeft(10, '0');
+            foundLeaderApp.ManualId = paddedManualId.Substring(0, 3) + '-' +
             paddedManualId.Substring(3, 3) + '-' +
             paddedManualId.Substring(6, 4);
             context.SaveChanges();
         }
 
-        if (foundFollowerApp.ManualId == null)
+        if (foundLeaderApp.ManualId == null)
         {
             return BadRequest(_localizer["ManualIdIsNull"]);
         }
@@ -107,11 +107,11 @@ public class GetCurrentUserInfoController : ControllerBase
 
         return Ok(new GetCurrentUserInfoResponse()
         {
-            ManualId = foundFollowerApp.ManualId,
+            ManualId = foundLeaderApp.ManualId,
             AuthenticationType = HttpContext.User.Identity.AuthenticationType,
             Email = email,
-            Id = id,
-            Followers = awesum.Awesum.LeaderOrFollowerRows(context.Followers, foundFollowerApp)
+            Id = foundLeaderApp.Id,
+            Followers = awesum.Awesum.LeaderOrFollowerRows(context.Followers, foundLeaderApp)
         });
     }
 }

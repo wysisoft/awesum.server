@@ -5,8 +5,6 @@ namespace awesum.server.Model;
 
 public partial class DatabaseItem
 {
-    public int Id { get; set; } = 0;
-
     public string Letters { get; set; } = "";
 
     public int Order { get; set; } = 0;
@@ -35,11 +33,15 @@ public partial class DatabaseItem
 
     public string Loginid { get; set; } = "";
 
-    public string UniqueId { get; set; } = "";
-
     public int DatabaseId { get; set; } = 0;
 
     public int AppId { get; set; } = 0;
 
     public string AppUniqueId { get; set; } = "";
+
+    public string UnitUniqueId { get; set; } = "";
+
+    public Guid UniqueId { get; set; } = Guid.Empty;
+
+    public int Id { get; set; } = 0;
 }

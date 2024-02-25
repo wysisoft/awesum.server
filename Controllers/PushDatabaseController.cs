@@ -79,7 +79,7 @@ public partial class PushDatabaseController : ControllerBase
         try
         {
             foundLeaderDatabase = context.Databases.SingleOrDefault(o => o.Loginid == id
-            && o.Id == request.Database.Id);
+            && o.UniqueId == request.Database.UniqueId); 
         }
         catch (System.InvalidOperationException)
         {
@@ -102,7 +102,10 @@ public partial class PushDatabaseController : ControllerBase
 
         if (foundLeaderDatabase == null)
         {
+            request.Database.Loginid = id;
+            request.Database.Id = 0;
             context.Databases.Add(request.Database);
+            context.SaveChanges();
             return Ok(response);
         }
 
@@ -111,8 +114,8 @@ public partial class PushDatabaseController : ControllerBase
             return BadRequest(_localizer["DatabaseDeleted"]);
         }
 
-        if (!request.Force && foundLeaderDatabase.LastModified >= request.Database.LastModified ||
-        foundLeaderDatabase.Version >= request.Database.Version)
+        if (!request.Force && foundLeaderDatabase.LastModified > request.Database.LastModified ||
+        foundLeaderDatabase.Version > request.Database.Version)
         {
             response.RequiresForce = true;
             return Ok(response);
@@ -122,6 +125,7 @@ public partial class PushDatabaseController : ControllerBase
         foundLeaderDatabase.Version < request.Database.Version)
         {
             context.Databases.Update(request.Database);
+            context.SaveChanges();
         }
 
         return Ok(response);

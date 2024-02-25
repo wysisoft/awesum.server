@@ -5,8 +5,6 @@ namespace awesum.server.Model;
 
 public partial class DatabaseType
 {
-    public int Id { get; set; } = 0;
-
     public string Type { get; set; } = "";
 
     public int DatabaseId { get; set; } = 0;
@@ -19,11 +17,15 @@ public partial class DatabaseType
 
     public string Loginid { get; set; } = "";
 
-    public string UniqueId { get; set; } = "";
-
     public string DatabaseGroup { get; set; } = "";
 
     public int AppId { get; set; } = 0;
 
     public string AppUniqueId { get; set; } = "";
+
+    public string DatabaseUniqueId { get; set; } = "";
+
+    public Guid UniqueId { get; set; } = Guid.Empty;
+
+    public int Id { get; set; } = 0;
 }

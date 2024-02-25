@@ -1,4 +1,4 @@
-dotnet ef dbcontext scaffold "Name=ConnectionStrings:postgres" Npgsql.EntityFrameworkCore.PostgreSQL -o ./Model/ -f
+dotnet ef dbcontext scaffold "Name=ConnectionStrings:postgres" Npgsql.EntityFrameworkCore.PostgreSQL -o ./Model/ -f --no-build 
 Remove-Item "../awesum.client/src/serverClasses/*"
 dotnet cs2ts ./Model/ -i Simple -o ../awesum.client/src/serverClasses/
 dotnet cs2ts ./ControllerResponses/ -i Simple -o ../awesum.client/src/serverClasses/
@@ -19,6 +19,7 @@ Get-ChildItem '../awesum.client/src/serverClasses/*.ts' -Recurse | ForEach-Objec
      (Get-Content $_) -replace 'DatabaseItem;', 'ServerDatabaseItem;' | Set-Content $_
      (Get-Content $_) -replace 'DatabaseType;', 'ServerDatabaseType;' | Set-Content $_
      (Get-Content $_) -replace 'Database;', 'ServerDatabase;' | Set-Content $_
+     (Get-Content $_) -replace 'Database\[\]', 'ServerDatabase[]' | Set-Content $_
      (Get-Content $_) -replace 'Array<ServerFollower>;', 'Array<ServerFollower>;' | Set-Content $_
 
 
@@ -36,7 +37,7 @@ Get-ChildItem '../awesum.client/src/serverClasses/*.ts' -Recurse | ForEach-Objec
 }
 
 Get-Item -Path "../awesum.client/src/serverClasses/*" | Rename-Item -NewName { "Server" + $_.Name.Substring(0, 1).ToUpper() + $_.Name.Substring(1).Replace(".Ts", ".ts") }
-Copy-Item -Path "../awesum.client/src/serverClasses/*" -Destination "../awesum.client/src/clientClasses/" -Recurse
+Get-Item -Path "../awesum.client/src/serverClasses/*" | Where-Object {$_.Name -notlike '*Request.ts' -and $_.Name -notlike '*Response.ts'} | Copy-Item -Destination "../awesum.client/src/clientClasses/" -Recurse
 Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace "    id: number \| null;", "" | Set-Content $_ }
 Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace '    ([A-Za-z0-9]+?:)', '    private _$1' | Set-Content $_ }
 Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'export interface ([A-Za-z0-9].*) {', 'import type { $1 as $1Interface } from "@/serverClasses/$1";
@@ -58,11 +59,6 @@ export class $1 implements $1Interface {
    }
    id = 0;
    table!: Table;
-   promises = Array<Promise<void>>();
-   async waitFor() {
-        await Promise.all(this.promises);
-        this.promises = Array<Promise<void>>();
-   }
     ' | Set-Content $_ }
 
 
@@ -74,11 +70,15 @@ Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Objec
 Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace ": boolean;", ": boolean = false;" | Set-Content $_ }
 
 Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace '\n.*public .*', '' | Set-Content $_ }
-Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): string = ''", '    private _$1: string = '''';
-public get $1():string { return this._$1; }public set $1(v:string) {this._$1=v;this.promises.push(Global.setTablePropertyValueById(this.id, ''$1'',v,this.table,this.promises))}' | Set-Content $_ }
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): string = '';", '    private _$1: string = '''';
+public get $1():string { return this._$1; }public set $1(v:string) {if(this._$1 != v){this._$1=v;Global.setTablePropertyValueById(this.id, ''$1'',v,this.table)}}' | Set-Content $_ }
 
-Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): number = 0", '    private _$1: number = 0;
-public get $1():number { return this._$1; }public set $1(v:number) {this._$1=v;this.promises.push(Global.setTablePropertyValueById(this.id, ''$1'',v,this.table,this.promises))}' | Set-Content $_ }
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): number = 0;", '    private _$1: number = 0;
+public get $1():number { return this._$1; }public set $1(v:number) {if(this._$1 != v){this._$1=v;Global.setTablePropertyValueById(this.id, ''$1'',v,this.table)}}' | Set-Content $_ }
+
+Get-ChildItem '../awesum.client/src/clientClasses/*.ts' -Recurse | ForEach-Object { (Get-Content $_) -replace "    private _(.*): boolean = false;", '    private _$1: boolean = false;
+public get $1():boolean { return this._$1; }public set $1(v:boolean) {if(this._$1 != v){this._$1=v;Global.setTablePropertyValueById(this.id, ''$1'',v,this.table)}}' | Set-Content $_ }
+
 
 Get-ChildItem './Model/*.cs' -Recurse | ForEach-Object { (Get-Content $_ | Out-String).Trim() -replace 'public string (.*) { get; set; } = null!;\n', 'public string $1 { get; set; } = "";
 ' | Set-Content $_ }

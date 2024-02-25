@@ -79,7 +79,7 @@ public partial class PushDatabaseItemController : ControllerBase
         try
         {
             foundLeaderDatabaseItem = context.DatabaseItems.SingleOrDefault(o => o.Loginid == id
-            && o.Id == request.DatabaseItem.Id);
+            && (o.Id == request.DatabaseItem.Id || o.UniqueId == request.DatabaseItem.UniqueId));
         }
         catch (System.InvalidOperationException)
         {
@@ -103,12 +103,15 @@ public partial class PushDatabaseItemController : ControllerBase
 
         if (foundLeaderDatabaseItem == null)
         {
+            request.DatabaseItem.Id = 0;
+            request.DatabaseItem.Loginid = id;
             context.DatabaseItems.Add(request.DatabaseItem);
+            context.SaveChanges();
             return Ok(response);
         }
 
-        if (!request.Force && foundLeaderDatabaseItem.LastModified >= request.DatabaseItem.LastModified ||
-        foundLeaderDatabaseItem.Version >= request.DatabaseItem.Version)
+        if (!request.Force && foundLeaderDatabaseItem.LastModified > request.DatabaseItem.LastModified ||
+        foundLeaderDatabaseItem.Version > request.DatabaseItem.Version)
         {
             response.RequiresForce = true;
             return Ok(response);
@@ -118,8 +121,10 @@ public partial class PushDatabaseItemController : ControllerBase
         foundLeaderDatabaseItem.Version < request.DatabaseItem.Version)
         {
             context.DatabaseItems.Update(request.DatabaseItem);
+            context.SaveChanges();
         }
 
+        response.DatabaseItemId = request.DatabaseItem.Id;
         return Ok(response);
     }
 }

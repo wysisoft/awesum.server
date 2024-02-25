@@ -80,7 +80,7 @@ public partial class PushDatabaseTypeController : ControllerBase
         try
         {
             foundLeaderDatabaseType = context.DatabaseTypes.SingleOrDefault(o => o.Loginid == id
-            && o.Id == request.DatabaseType.Id);
+            && o.UniqueId == request.DatabaseType.UniqueId);
         }
         catch (System.InvalidOperationException)
         {
@@ -103,12 +103,15 @@ public partial class PushDatabaseTypeController : ControllerBase
 
         if (foundLeaderDatabaseType == null)
         {
+            request.DatabaseType.Id = 0;
+            request.DatabaseType.Loginid = id;
             context.DatabaseTypes.Add(request.DatabaseType);
+            context.SaveChanges();
             return Ok(response);
         }
 
-        if (!request.Force && foundLeaderDatabaseType.LastModified >= request.DatabaseType.LastModified ||
-        foundLeaderDatabaseType.Version >= request.DatabaseType.Version)
+        if (!request.Force && foundLeaderDatabaseType.LastModified > request.DatabaseType.LastModified ||
+        foundLeaderDatabaseType.Version > request.DatabaseType.Version)
         {
             response.RequiresForce = true;
             return Ok(response);
@@ -118,8 +121,10 @@ public partial class PushDatabaseTypeController : ControllerBase
         foundLeaderDatabaseType.Version < request.DatabaseType.Version)
         {
             context.DatabaseTypes.Update(request.DatabaseType);
+            context.SaveChanges();
         }
 
+        response.DatabaseTypeId = request.DatabaseType.Id;
         return Ok(response);
     }
 }
