@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS public.apps
     version integer NOT NULL DEFAULT 0,
     "allowedToInitiateFollows" boolean NOT NULL DEFAULT false,
     "uniqueId" uuid NOT NULL,
-    "authenticationType" text COLLATE pg_catalog."default" NOT NULL
+    "authenticationType" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    id integer NOT NULL,
+    CONSTRAINT apps_pkey PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS public."databaseItems";
@@ -43,14 +45,15 @@ CREATE TABLE IF NOT EXISTS public."databaseItems"
     "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "unitUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "uniqueId" uuid NOT NULL,
-    CONSTRAINT "databaseItems_pkey" PRIMARY KEY ("uniqueId")
+    id integer NOT NULL,
+    CONSTRAINT "databaseItems_pkey" PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS public."databaseTypes";
 
 CREATE TABLE IF NOT EXISTS public."databaseTypes"
 (
-    type text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
+    type int not null DEFAULT 0,
     "databaseId" integer NOT NULL DEFAULT 0,
     "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
     version integer NOT NULL DEFAULT 0,
@@ -61,7 +64,8 @@ CREATE TABLE IF NOT EXISTS public."databaseTypes"
     "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "databaseUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "uniqueId" uuid NOT NULL,
-    CONSTRAINT "databaseTypes_pkey" PRIMARY KEY ("uniqueId")
+    id integer NOT NULL,
+    CONSTRAINT "databaseTypes_pkey" PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS public."databaseUnits";
@@ -80,7 +84,8 @@ CREATE TABLE IF NOT EXISTS public."databaseUnits"
     "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "databaseTypeUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "uniqueId" uuid NOT NULL,
-    CONSTRAINT "databaseUnits_pkey" PRIMARY KEY ("uniqueId")
+    id integer NOT NULL,
+    CONSTRAINT "databaseUnits_pkey" PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS public.databases;
@@ -97,7 +102,8 @@ CREATE TABLE IF NOT EXISTS public.databases
     "appId" integer NOT NULL DEFAULT 0,
     "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "uniqueId" uuid NOT NULL,
-    CONSTRAINT databases_pkey PRIMARY KEY ("uniqueId")
+    id integer NOT NULL,
+    CONSTRAINT databases_pkey PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS public.followers;

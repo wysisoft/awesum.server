@@ -174,9 +174,7 @@ public partial class AwesumContext : DbContext
                 .HasDefaultValueSql("''::text")
                 .HasColumnName("loginid");
             entity.Property(e => e.Order).HasColumnName("order");
-            entity.Property(e => e.Type)
-                .HasDefaultValueSql("''::text")
-                .HasColumnName("type");
+            entity.Property(e => e.Type).HasColumnName("type");
             entity.Property(e => e.UniqueId).HasColumnName("uniqueId");
             entity.Property(e => e.Version).HasColumnName("version");
         });

@@ -5,7 +5,7 @@ namespace awesum.server.Model;
 
 public partial class DatabaseType
 {
-    public string Type { get; set; } = "";
+    public int Type { get; set; } = 0;
 
     public int DatabaseId { get; set; } = 0;
 
