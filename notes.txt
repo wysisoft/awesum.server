@@ -8,9 +8,10 @@ sudo certbot -d awesum.app --manual --preferred-challenges dns certonly --key-ty
 sudo cp /etc/letsencrypt/live/awesum.app-0001/privkey.pem /home/b/snap/novnc/privkey.pem
 sudo cp /etc/letsencrypt/live/awesum.app-0001/fullchain.pem /home/b/snap/novnc/cert.pem
 
-sudo cp /etc/letsencrypt/live/awesum.app-0001/privkey.pem /home/b/awesum3/awesum.server/privkey.pem
-sudo cp /etc/letsencrypt/live/awesum.app-0001/fullchain.pem /home/b/awesum3/awesum.server/cert.pem
+sudo cp /etc/letsencrypt/live/awesum.app-0001/privkey.pem /home/b/awesum4/awesum.server/privkey.pem
+sudo cp /etc/letsencrypt/live/awesum.app-0001/fullchain.pem /home/b/awesum4/awesum.server/cert.pem
+
+
 
 #novnc command
-novnc --cert /home/b/snap/novnc/cert.pem  --key /home/b/snap/novnc/privkey.pem --vnc localhost:5900 --web /home/b/snap/novnc --ssl-only --web-auth --auth-plugin BasicHTTPAuth --auth-source vnc:Welcome1!
-
+novnc --cert /home/b/snap/novnc/cert.pem  --key /home/b/snap/novnc/privkey.pem --vnc localhost:5900 --web /home/b/snap/novnc --ssl-only --web-auth --auth-plugin BasicHTTPAuth --auth-source vnc:This4Now\!Welcome1\!
