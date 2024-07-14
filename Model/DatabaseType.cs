@@ -28,4 +28,6 @@ public partial class DatabaseType
     public Guid UniqueId { get; set; } = Guid.Empty;
 
     public int Id { get; set; } = 0;
+
+    public bool Deleted { get; set; } = false;
 }

@@ -80,7 +80,6 @@ public class GetCurrentUserInfoController : ControllerBase
         {
             foundLeaderApp = app;
 
-            foundLeaderApp.Id = 0;
             foundLeaderApp.Loginid = id;
             foundLeaderApp.Email = email;
 

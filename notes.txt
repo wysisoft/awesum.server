@@ -15,3 +15,6 @@ sudo cp /etc/letsencrypt/live/awesum.app-0001/fullchain.pem /home/b/awesum4/awes
 
 #novnc command
 novnc --cert /home/b/snap/novnc/cert.pem  --key /home/b/snap/novnc/privkey.pem --vnc localhost:5900 --web /home/b/snap/novnc --ssl-only --web-auth --auth-plugin BasicHTTPAuth --auth-source vnc:This4Now\!Welcome1\!
+
+
+dotnet /home/b/awesum4/awesum.client/ConvertCSSToVMin.cs /home/b/awesum4/awesum.client/src/scss/_root.scss

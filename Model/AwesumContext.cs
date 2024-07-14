@@ -139,7 +139,9 @@ public partial class AwesumContext : DbContext
                 .HasDefaultValueSql("''::text")
                 .HasColumnName("text");
             entity.Property(e => e.Type).HasColumnName("type");
-            entity.Property(e => e.UniqueId).HasColumnName("uniqueId");
+            entity.Property(e => e.UniqueId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("uniqueId");
             entity.Property(e => e.UnitId).HasColumnName("unitId");
             entity.Property(e => e.UnitUniqueId)
                 .HasDefaultValueSql("''::text")
@@ -167,6 +169,7 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.DatabaseUniqueId)
                 .HasDefaultValueSql("''::text")
                 .HasColumnName("databaseUniqueId");
+            entity.Property(e => e.Deleted).HasColumnName("deleted");
             entity.Property(e => e.LastModified)
                 .HasDefaultValueSql("'1900-01-01 00:00:00-07'::timestamp with time zone")
                 .HasColumnName("lastModified");
