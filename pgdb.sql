@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS public."databaseItems"
     "appId" integer NOT NULL DEFAULT 0,
     "appUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "unitUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
-    "uniqueId" uuid NOT NULL,
-    id integer NOT NULL,
+    "uniqueId" uuid NOT NULL DEFAULT gen_random_uuid(),
+    id integer NOT NULL DEFAULT 0,
     CONSTRAINT "databaseItems_pkey" PRIMARY KEY (id)
 );
 
@@ -53,7 +53,7 @@ DROP TABLE IF EXISTS public."databaseTypes";
 
 CREATE TABLE IF NOT EXISTS public."databaseTypes"
 (
-    type int not null DEFAULT 0,
+    type integer NOT NULL DEFAULT 0,
     "databaseId" integer NOT NULL DEFAULT 0,
     "lastModified" timestamp with time zone NOT NULL DEFAULT '1900-01-01 00:00:00-07'::timestamp with time zone,
     version integer NOT NULL DEFAULT 0,
@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS public."databaseTypes"
     "databaseUniqueId" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
     "uniqueId" uuid NOT NULL,
     id integer NOT NULL,
+    deleted boolean NOT NULL DEFAULT false,
     CONSTRAINT "databaseTypes_pkey" PRIMARY KEY (id)
 );
 
