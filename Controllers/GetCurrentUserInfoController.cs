@@ -78,11 +78,14 @@ public class GetCurrentUserInfoController : ControllerBase
         var foundLeaderApp = context.Apps.SingleOrDefault(o => o.Loginid == id);
         if (foundLeaderApp == null)
         {
-            foundLeaderApp = app;
+              foundLeaderApp = app;
 
             foundLeaderApp.Loginid = id;
             foundLeaderApp.Email = email;
 
+            foundLeaderApp.Id = 0;
+
+            
             context.Apps.Add(foundLeaderApp);
 
             context.SaveChanges();

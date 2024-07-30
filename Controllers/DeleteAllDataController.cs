@@ -18,7 +18,7 @@ public class DeleteAllDataController : ControllerBase
 {
     private readonly ILogger<DeleteAllDataController> _logger;
     private readonly IStringLocalizer _localizer;
-private readonly AwesumContext _context;
+    private readonly AwesumContext _context;
     public DeleteAllDataController(ILogger<DeleteAllDataController> logger, IStringLocalizerFactory localizerFactory, IMemoryCache cache,
     AwesumContext context)
     {
@@ -77,6 +77,15 @@ private readonly AwesumContext _context;
         {
             return BadRequest();
         }
+
+        //delete all apps, followers, types, items, units
+        context.Apps.RemoveRange(context.Apps.Where(o => o.Loginid == id));
+        context.Followers.RemoveRange(context.Followers.Where(o => o.UniqueId.ToString() == id));
+        context.Databases.RemoveRange(context.Databases.Where(o => o.Loginid == id));
+        context.DatabaseTypes.RemoveRange(context.DatabaseTypes.Where(o => o.Loginid == id));
+        context.DatabaseItems.RemoveRange(context.DatabaseItems.Where(o => o.Loginid == id));
+        context.DatabaseUnits.RemoveRange(context.DatabaseUnits.Where(o => o.Loginid == id));
+        context.SaveChanges();
 
         return Ok();
     }

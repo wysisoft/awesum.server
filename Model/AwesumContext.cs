@@ -39,7 +39,7 @@ public partial class AwesumContext : DbContext
             entity.ToTable("apps");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
             entity.Property(e => e.AllowedToInitiateFollows).HasColumnName("allowedToInitiateFollows");
             entity.Property(e => e.AuthenticationType)
@@ -64,6 +64,7 @@ public partial class AwesumContext : DbContext
             entity.Property(e => e.Name)
                 .HasDefaultValueSql("''::text")
                 .HasColumnName("name");
+            entity.Property(e => e.Order).HasColumnName("order");
             entity.Property(e => e.UniqueId).HasColumnName("uniqueId");
             entity.Property(e => e.Version).HasColumnName("version");
         });

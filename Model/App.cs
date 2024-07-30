@@ -28,4 +28,6 @@ public partial class App
     public string AuthenticationType { get; set; } = "";
 
     public int Id { get; set; } = 0;
+
+    public int Order { get; set; } = 0;
 }
