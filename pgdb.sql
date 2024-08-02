@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS public.apps
     "allowedToInitiateFollows" boolean NOT NULL DEFAULT false,
     "uniqueId" uuid NOT NULL,
     "authenticationType" text COLLATE pg_catalog."default" NOT NULL DEFAULT ''::text,
-    id integer NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    "order" integer NOT NULL DEFAULT 0,
     CONSTRAINT apps_pkey PRIMARY KEY (id)
 );
 
