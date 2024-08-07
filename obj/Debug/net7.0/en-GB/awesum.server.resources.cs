@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("awesum.server")]
 [assembly: System.Reflection.AssemblyCopyrightAttribute(" ")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e4a6cc256f9921c31d2c953b36f71cbf215758c8")]
 [assembly: System.Reflection.AssemblyProductAttribute("awesum.server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("awesum.server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -19,7 +19,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy =>
                       {
-                          policy.AllowCredentials().AllowAnyHeader().AllowAnyMethod().WithOrigins("https://awesum.app","http://localhost:8443", "http://127.0.0.1:8443", "https://accounts.google.com");
+                          policy.AllowCredentials().AllowAnyHeader().AllowAnyMethod().WithOrigins("https://awesum.app:8443","https://awesum.app", "https://accounts.google.com");
                       });
 });
 
